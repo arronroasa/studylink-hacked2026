@@ -20,6 +20,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# @app.get("/count")
-# async def return_count():
-#     return {"count" : 5}
+@app.get("/count")
+async def return_count():
+    return {"count" : 5}
