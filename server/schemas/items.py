@@ -10,3 +10,10 @@ class ItemCreate(BaseModel):
 
 class ItemResponse(ItemCreate):
     id: int
+
+class ItemAdd(BaseModel):
+    group_id: int
+    user_id: int
+
+class AddResponse(ItemAdd):
+    id: int
