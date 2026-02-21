@@ -13,4 +13,19 @@ async def get_item(item_id: int):
     status_code=status.HTTP_201_CREATED
 )
 async def create_item(item: ItemCreate):
-    pass
+    # ARRON DO YOUR DB QUERY HERE
+    query = """
+
+    """
+
+    try:
+        # QUERY HERE
+        raise NotImplementedError
+
+        group_id = 0 # Group ID here
+        return {"message": "Group Created Successfully!", "id": group_id}
+    except Exception as e:
+        # QUERY FIX HERE
+        print(f"Database error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create group.")
+    
