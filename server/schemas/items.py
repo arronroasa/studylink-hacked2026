@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
+from typing import List
 
 class ItemCreate(BaseModel):
     owner_id: int
@@ -22,11 +23,26 @@ class ChangeResponse(ItemChange):
     message: str
 
 class GetItems(BaseModel):
-    user_id: int | None
+    user_id: int
+    is_search: bool
+    course_code: str | None = Field(default=None, min_length=6, max_length=7)
 
-class GetGroup(BaseModel):
+class GetGroup(GetItems):
+    owner_id: int
+    course_code: str
+    location: str
+    datetime: datetime
+    has_joined: bool
+
+class GetItem(BaseModel):
+    user_id: int
+    group_id: int
+
+class GroupDetail(GetItem):
     owner_id: int
     course_code: str
     location: str
     datetime: datetime
     description: str
+    attendees: List[str]
+    has_joined: bool
