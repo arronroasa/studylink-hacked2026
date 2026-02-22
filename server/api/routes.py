@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List
-from schemas.items import ItemCreate, ItemResponse, ItemChange, ChangeResponse, GetItems, GetGroup, GetItem, GroupDetail
+from schemas.items import ItemCreate, ItemResponse, ItemChange, ChangeResponse, GetItems, GetGroup, GetItem, GroupDetail, ItemDelete
 import sqlite3
 
 router = APIRouter(prefix="/items", tags=["items"])
@@ -26,7 +26,7 @@ async def create_item(item: ItemCreate):
     """
 
     # Testing purposes:
-    # return {"id": 5, "message": "Session Created Successfully!"}
+    return {"id": 5, "message": "Session created successfully!"}
     query = """
     INSERT INTO events (organizer_id, name, description, location_id, start_time)
     VALUES (?, ?, ?, ?, ?)
@@ -41,6 +41,29 @@ async def create_item(item: ItemCreate):
         # QUERY FIX HERE
         print(f"Database error: {e}")
         raise HTTPException(status_code=500, detail="Failed to create session.")
+
+@router.post("/delete/",
+    response_model=ItemResponse,
+    status_code=status.HTTP_201_CREATED
+)
+async def delete_item(item: ItemDelete):
+    """
+        Deleting group and using execute_query()
+    """
+
+    return {"id": item.group_id, "message": "Group successfully deleted."}
+
+    # FIRST RETRIEVE OWNER_ID FROM QUERY
+    # If user_id does not match owner_id then raise some error and return
+    id_query = None
+    try:
+        raise NotImplementedError
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+
+    query = """
+
+    """
     
 @router.post("/join/",
     response_model=ChangeResponse,
@@ -79,6 +102,9 @@ async def remove_item(item: ItemChange):
     """
         Leaving a group and using execute_query()
     """
+    # !!!!Testing purposes only!!!!
+    return {"message": "Successfully left session"}
+
     query = """
 
     """
@@ -114,7 +140,7 @@ def execute_query(query: str, params: tuple =(), fetch: bool = False):
         return cursor.lastrowid
     
 ##### DATABASE GET REQUESTS
-@router.get("/my_groups/",
+@router.get("/groups/",
     response_model=List[GetGroup],
     status_code=status.HTTP_200_OK
 )
@@ -124,10 +150,11 @@ async def get_my_groups(item: GetItems):
     """
 
     query=None
-    if GetItems.user_id == None:
+    if GetItems.is_search:
         # THIS IS BROWSING REQUEST
         pass
     else:
+        # THIS IS A GET GROUPS JOINED REQUEST
         pass
 
     try:
@@ -137,6 +164,7 @@ async def get_my_groups(item: GetItems):
         raise HTTPException(status_code=500, detail="Failed to get request")
 
 
+# DEPRECATED 
 @router.get("/group_detail/",
     response_model=GroupDetail,
     status_code = status.HTTP_200_OK

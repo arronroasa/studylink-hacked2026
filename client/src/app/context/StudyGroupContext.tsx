@@ -152,7 +152,25 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
     setJoinedGroupIds((prev) => new Set([...prev, groupId]));
   };
 
-  const leaveGroup = (groupId: number) => {
+  const leaveGroup = async (groupId: number) => {
+    const response = await fetch(`http://localhost:8000/items/leave/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        'group_id': groupId,
+        'user_id': 5,
+      })
+      // If your backend needs to know WHO is joining, add it to the body:
+      // body: JSON.stringify({ userId: currentUserId })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to join group');
+    }
+
     setGroups((prev) =>
       prev.map((group) =>
         group.id === groupId && group.members > 0
@@ -167,7 +185,25 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const deleteGroup = (groupId: number) => {
+  const deleteGroup = async (groupId: number) => {
+    const response = await fetch(`http://localhost:8000/items/delete/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        'group_id': groupId,
+        'user_id': 5,
+      })
+      // If your backend needs to know WHO is joining, add it to the body:
+      // body: JSON.stringify({ userId: currentUserId })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to join group');
+    }
+
     setGroups((prev) => prev.filter((g) => g.id !== groupId));
     setJoinedGroupIds((prev) => {
       const next = new Set(prev);
