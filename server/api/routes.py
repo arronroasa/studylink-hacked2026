@@ -26,7 +26,7 @@ async def create_item(item: ItemCreate):
     """
 
     # Testing purposes:
-    return {"id": 5, "message": "Session created successfully!"}
+    return {"id": item.owner_id, "message": "Session created successfully!"}
     query = """
     INSERT INTO events (organizer_id, name, description, location_id, start_time)
     VALUES (?, ?, ?, ?, ?)
