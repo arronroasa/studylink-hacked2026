@@ -1,9 +1,8 @@
 -- Locations
 CREATE TABLE locations (
     lid INTEGER PRIMARY KEY AUTOINCREMENT,
-    name VARCHAR(100) NOT NULL,
-    latitude REAL,
-    longitude REAL
+    building VARCHAR(100) NOT NULL,
+    room VARCHAR(8) NOT NULL
 );
 
 -- Users
@@ -19,13 +18,17 @@ CREATE TABLE users (
 -- Study Events
 CREATE TABLE events (
     eid INTEGER PRIMARY KEY AUTOINCREMENT,
-    organizer_id INTEGER,
+    owner_id INTEGER,
     name VARCHAR(100) NOT NULL,
+    course_code VARCHAR(12) NOT NULL,
     description TEXT,
-    location_id INTEGER,
-    start_time DATETIME,
-    FOREIGN KEY (organizer_id) REFERENCES users(uid) ON DELETE SET NULL,
-    FOREIGN KEY (location_id) REFERENCES locations(lid)
+    max_members INTEGER NOT NULL,
+    meeting_day VARCHAR(8),
+    meeting_time VARCHAR(8),
+    building VARCHAR(32),
+    room VARCHAR(8),
+    next_meeting VARCHAR(32),
+    FOREIGN KEY (owner_id) REFERENCES users(uid) ON DELETE SET NULL
 );
 
 -- Event Attendees
@@ -62,3 +65,5 @@ CREATE TABLE search_history (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (uid) REFERENCES users(uid)
 );
+
+INSERT INTO users (uid, username, email, password_hash) VALUES (5, 'testuser', 'test@test.com', 'testhash');

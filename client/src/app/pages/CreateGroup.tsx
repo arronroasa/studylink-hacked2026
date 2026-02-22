@@ -54,7 +54,7 @@ export function CreateGroup() {
     e.preventDefault();
 
     try {
-      const response = await fetch('http://localhost:8000/items/create/',{
+      const response = await fetch('http://localhost:8000/items/create/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

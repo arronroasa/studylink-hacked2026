@@ -2,6 +2,14 @@ from typing import Union
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.routes import router
+from init_db import init_db
+import os
+
+
+# At the top of your app startup, before routes are registered
+if not os.path.exists("database.db"):
+    init_db()
+
 
 app = FastAPI()
 

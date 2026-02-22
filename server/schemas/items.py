@@ -35,12 +35,18 @@ class GetItems(BaseModel):
     course_code: str | None = Field(default=None, min_length=6, max_length=12) # CHANGE HERE
 
 class GetGroup(BaseModel):
+    eid: int
     owner_id: int
+    name: str
     course_code: str
-    location: str
-    datetime: datetime
-    has_joined: bool
-
+    description: str | None
+    max_members: int
+    meeting_day: str
+    meeting_time: str
+    building: str
+    room: str
+    next_meeting: str
+    has_joined: bool = False  # computed, default False for now
 # Retrieving Group Specific Details
 class GetItem(BaseModel):
     user_id: int

@@ -8,6 +8,7 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
+      - ./database:/database
     networks:
       - myapp-net
 
@@ -23,7 +24,6 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-
   # db:
   #   image: postgres:16
   #   container_name: musical_octo_potato_db
@@ -39,6 +39,7 @@ services:
 
 volumes:
   postgres-data:
+
 
 networks:
   myapp-net:
