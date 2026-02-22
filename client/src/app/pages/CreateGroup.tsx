@@ -152,7 +152,7 @@ export function CreateGroup() {
                 style={inputStyle}
                 id="subject"
                 name="subject"
-                placeholder="e.g., Mathematics, Chemistry, Computer Science"
+                placeholder="e.g., MATH144, CHEM101, CMPUT201"
                 value={formData.subject}
                 onChange={handleChange}
                 required

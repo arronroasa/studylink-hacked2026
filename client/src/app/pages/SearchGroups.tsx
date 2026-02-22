@@ -1,6 +1,6 @@
 // client/src/app/pages/SearchGroups.tsx
 import { useState } from "react";
-import { Search, Filter } from "lucide-react";
+import { Search } from "lucide-react";
 import { Link } from "react-router";
 import { useStudyGroups } from "../context/StudyGroupContext";
 import { StudyGroupCard } from "../components/StudyGroupCard";
@@ -9,14 +9,12 @@ export function SearchGroups() {
   const [searchQuery, setSearchQuery] = useState("");
   const { groups, isJoined } = useStudyGroups();
 
-  const filteredGroups = groups
-    .filter((group) => !isJoined(group.id))
-    .filter(
-      (group) =>
-        group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        group.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        group.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+  const filteredGroups = groups.filter(
+    (group) =>
+      group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      group.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      group.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div style={{ flex: 1, overflowY: "auto", backgroundColor: "#f9fafb" }}>
@@ -40,13 +38,10 @@ export function SearchGroups() {
             borderRadius: "12px",
             padding: "16px 20px",
             marginBottom: "24px",
-            display: "flex",
-            gap: "12px",
-            alignItems: "center",
             boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
           }}
         >
-          <div style={{ flex: 1, position: "relative" }}>
+          <div style={{ position: "relative" }}>
             <Search
               style={{
                 position: "absolute",
@@ -79,24 +74,6 @@ export function SearchGroups() {
               }}
             />
           </div>
-          <button
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "9px 16px",
-              borderRadius: "8px",
-              border: "1.5px solid #d1d5db",
-              backgroundColor: "transparent",
-              fontSize: "13px",
-              fontWeight: "600",
-              color: "#374151",
-              cursor: "pointer",
-            }}
-          >
-            <Filter style={{ width: "14px", height: "14px" }} />
-            Filters
-          </button>
         </div>
 
         {/* Results Count */}
@@ -122,19 +99,12 @@ export function SearchGroups() {
               boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
             }}
           >
-            <Search
-              style={{
-                width: "40px",
-                height: "40px",
-                color: "#d1d5db",
-                margin: "0 auto 16px",
-              }}
-            />
+            <Search style={{ width: "40px", height: "40px", color: "#d1d5db", margin: "0 auto 16px" }} />
             <p style={{ fontSize: "16px", fontWeight: "600", color: "#111827", marginBottom: "8px" }}>
-              No available study groups found
+              No study groups found
             </p>
             <p style={{ fontSize: "14px", color: "#6b7280", marginBottom: "20px" }}>
-              You may have joined all groups, or try adjusting your search.
+              Try adjusting your search or create a new group.
             </p>
             <Link to="/create">
               <button
