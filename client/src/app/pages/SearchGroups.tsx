@@ -1,20 +1,24 @@
+// client/src/app/pages/SearchGroups.tsx
 import { Card } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { useState } from "react";
-import { Search, Users, Calendar, BookOpen, Filter, MapPin } from "lucide-react";
+import { Search, Filter } from "lucide-react";
 import { useStudyGroups } from "../context/StudyGroupContext";
+import { StudyGroupCard } from "../components/StudyGroupCard";
 
 export function SearchGroups() {
   const [searchQuery, setSearchQuery] = useState("");
-  const { groups, joinGroup, leaveGroup, isJoined } = useStudyGroups();
+  const { groups, isJoined } = useStudyGroups();
 
-  const filteredGroups = groups.filter(
-    (group) =>
-      group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      group.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      group.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredGroups = groups
+    .filter(group => !isJoined(group.id))
+    .filter(
+      (group) =>
+        group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        group.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        group.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -31,9 +35,7 @@ export function SearchGroups() {
         <Card className="p-4 mb-6">
           <div className="flex gap-4">
             <div className="flex-1 relative">
-              <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
-              />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search by group name, subject, or keywords..."
                 value={searchQuery}
@@ -56,67 +58,9 @@ export function SearchGroups() {
         </div>
 
         {/* Study Groups Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-[#FFFAE0] p-4 rounded-lg">
           {filteredGroups.map((group) => (
-            <Card key={group.id} className="p-6 hover:shadow-lg transition-shadow">
-              {/* Header */}
-              <div className="mb-4">
-                <h3 className="mb-1">{group.name}</h3>
-                <p className="text-sm mb-2" style={{ color: "#16a34a" }}>
-                  {group.subject}
-                </p>
-                <p className="text-sm text-muted-foreground">{group.description}</p>
-              </div>
-
-              {/* Details */}
-              <div className="space-y-2 mb-4 pb-4 border-b">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Users className="h-4 w-4" />
-                  <span>
-                    {group.members} / {group.maxMembers} members
-                  </span>
-                  <div className="ml-auto">
-                    <div className="w-20 h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full"
-                        style={{
-                          width: `${(group.members / group.maxMembers) * 100}%`,
-                          backgroundColor: "#16a34a",
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Calendar className="h-4 w-4" />
-                  <span>{group.meetingDay}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <BookOpen className="h-4 w-4" />
-                  <span>{group.meetingTime}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4" />
-                  <span>{group.building}, {group.floor}</span>
-                </div>
-              </div>
-
-              {/* Action Button */}
-              <Button
-                className="w-full"
-                style={{ backgroundColor: "#16a34a" }}
-                disabled={group.members >= group.maxMembers}
-                onClick={() => {
-                  if (isJoined(group.id)) {
-                    leaveGroup(group.id);
-                  } else {
-                    joinGroup(group.id);
-                  }
-                }}
-              >
-                {isJoined(group.id) ? "Leave Group" : (group.members >= group.maxMembers ? "Group Full" : "Join Group")}
-              </Button>
-            </Card>
+            <StudyGroupCard key={group.id} group={group} />
           ))}
         </div>
 
