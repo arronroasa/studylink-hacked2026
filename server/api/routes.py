@@ -144,13 +144,13 @@ def execute_query(query: str, params: tuple =(), fetch: bool = False):
     response_model=List[GetGroup],
     status_code=status.HTTP_200_OK
 )
-async def get_my_groups(item: GetItems):
+async def get_my_groups(item: GetItems = Depends()):
     """
         Retrieving different groups with filters
     """
 
     query=None
-    if GetItems.is_search:
+    if item.is_search:
         # THIS IS BROWSING REQUEST
         pass
     else:
