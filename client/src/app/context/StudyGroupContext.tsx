@@ -64,11 +64,11 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
       const translatedGroups: StudyGroup[] = data.map((g: any) => {
         // If the backend says the user is in this group, add it to our Set
         if (g.has_joined === 1 || g.has_joined === true) {
-          newJoinedIds.add(g.eid);
+          newJoinedIds.add(g.group_id);
         }
 
         return {
-          id: g.eid,
+          id: g.group_id,
           name: g.name || "Untitled Group",
           subject: g.course_code,
           description: g.description || "No description provided.",

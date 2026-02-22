@@ -37,9 +37,6 @@ async def create_item(item: ItemCreate):
             
         location_id = lid_result[0]["lid"]
 
-        users = execute_query("SELECT uid FROM users", (), fetch=True)
-        print([row["uid"] for row in users])
-
         # Step 3: Create Event with all fields from your schema
         event_query = """
         INSERT INTO events (
@@ -65,6 +62,11 @@ async def create_item(item: ItemCreate):
         )
 
         session_id = execute_query(event_query, params)
+
+        # Step 4: Handle User Query
+        user_query = "INSERT INTO attendees (eid, uid) VALUES (?, ?)"
+        user_params = (session_id, item.owner_id)
+        execute_query(user_query, user_params)
         return {"id": session_id, "message": "Session Created Successfully!"}
 
     except sqlite3.IntegrityError as e:
@@ -203,47 +205,52 @@ def execute_query(query: str, params: tuple = (), fetch: bool = False):
         return cursor.lastrowid
     
 ##### DATABASE GET REQUESTS
-@router.get("/groups/",
-    # response_model=List[GetGroup],
-    status_code=status.HTTP_200_OK
-)
+@router.get("/groups/", response_model=List[GetGroup], status_code=status.HTTP_200_OK)
 async def get_my_groups(item: GetItems = Query(...)):
-    """
-        Retrieving different groups with filters
-    """
     try:
+        # We explicitly map every DB column to the model field name
+        base_select = """
+            SELECT 
+                e.eid AS group_id,
+                e.organizer_id AS owner_id,
+                e.name,
+                e.course_code,
+                e.description,
+                e.max_members,
+                e.meeting_day,
+                e.meeting_time,
+                l.name AS building,
+                e.room,
+                (a.uid IS NOT NULL) AS has_joined
+            FROM events e
+            JOIN locations l ON e.location_id = l.lid
+            LEFT JOIN attendees a ON e.eid = a.eid AND a.uid = ?
+        """
+
         if item.is_search:
-            # THIS IS BROWSING REQUEST
-            if item.course_code is None:
-                query = "SELECT * FROM events"
-                params = ()
+            if item.course_code is None or item.course_code == None:
+                query = base_select
+                params = (item.user_id,)
             else:
-                query="SELECT * FROM events WHERE course_code LIKE ?"
-                params = (f"%{item.course_code}%",)
-        
+                # Add the filter while keeping the same column structure
+                query = f"{base_select} WHERE e.course_code LIKE ?"
+                params = (item.user_id, f"%{item.course_code}%")
         else:
-            # THIS IS A GET GROUPS JOINED REQUEST
-            query = """
-                SELECT e.* FROM events e
-                JOIN attendees a ON e.eid = a.eid
-                WHERE a.uid = ?
-            """
+            # For "Joined Groups", filter to rows where the user is an attendee
+            query = f"{base_select} WHERE a.uid IS NOT NULL"
             params = (item.user_id,)
-        
+
         results = execute_query(query, params, fetch=True)
-        groups = [dict(row) for row in results]
-        for group in groups:
-            group["has_joined"] = False
-        return groups
+        
+        # Convert sqlite3.Row objects to dictionaries
+        return [dict(row) for row in results]
+
     except Exception as e:
         print(f"Error: {e}")
-        raise HTTPException(status_code=500, detail="Failed to get request")
-
-@router.get("/check_membership/", status_code=status.HTTP_200_OK)
-async def check_membership(group_id: int, user_id: int):
-    query = "SELECT 1 FROM attendees WHERE eid = ? AND uid = ?"
-    result = execute_query(query, (group_id, user_id), fetch=True)
-    return {"is_member": bool(result)}
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Database mapping failed: {str(e)}"
+        )
 
 # DEPRECATED 
 # @router.get("/group_detail/",
@@ -261,4 +268,3 @@ async def check_membership(group_id: int, user_id: int):
 #     except Exception as e:
 #         print(f"Not Implemented {e}")
 #         raise HTTPException(status_code=500, detail="Failed to get request")
-    

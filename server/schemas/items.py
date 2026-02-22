@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 # Creating/Deleting Group
 class ItemCreate(BaseModel):
@@ -38,10 +38,16 @@ class GetItems(BaseModel):
     course_code: str | None = Field(default=None, min_length=6, max_length=12) # CHANGE HERE
 
 class GetGroup(BaseModel):
-    owner_id: int
-    course_code: str
-    location: str
-    datetime: str
+    group_id: int
+    owner_id: int 
+    name: str
+    course_code: str | None
+    description: Optional[str] = None
+    max_members: int
+    meeting_day: str
+    meeting_time: str
+    building: str
+    room: str
     has_joined: bool
 
 # Retrieving Group Specific Details
