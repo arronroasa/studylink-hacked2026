@@ -12,7 +12,7 @@ export function Home() {
   const stats = [
     { label: "Groups Joined", value: myGroups.length.toString(), color: "#16a34a" },
     { label: "Total Groups", value: groups.length.toString(), color: "#ca8a04" },
-    { label: "Total Members", value: groups.reduce((sum, g) => sum + g.members, 0).toString(), color: "#16a34a" },
+    { label: "Total Members", value: "500K+", color: "#16a34a" },
   ];
 
   return (
