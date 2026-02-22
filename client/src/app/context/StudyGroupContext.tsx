@@ -31,7 +31,7 @@ const initialGroups: StudyGroup[] = [
   {
     id: 1,
     name: "Advanced Calculus Study Group",
-    subject: "Mathematics",
+    subject: "MATH146",
     description: "Focus on derivatives, integrals, and applications of calculus in real-world scenarios.",
     members: 12,
     maxMembers: 15,
@@ -44,7 +44,7 @@ const initialGroups: StudyGroup[] = [
   {
     id: 2,
     name: "Web Development Bootcamp",
-    subject: "Computer Science",
+    subject: "CMPUT201",
     description: "Learn React, Node.js, and modern web development practices together.",
     members: 8,
     maxMembers: 10,
@@ -57,7 +57,7 @@ const initialGroups: StudyGroup[] = [
   {
     id: 3,
     name: "Organic Chemistry Review",
-    subject: "Chemistry",
+    subject: "CHEM101",
     description: "Review organic chemistry concepts, reactions, and problem-solving strategies.",
     members: 15,
     maxMembers: 20,
@@ -70,7 +70,7 @@ const initialGroups: StudyGroup[] = [
   {
     id: 4,
     name: "Data Structures & Algorithms",
-    subject: "Computer Science",
+    subject: "CMPUT175",
     description: "Master DSA concepts for interviews and competitive programming.",
     members: 10,
     maxMembers: 12,
@@ -83,7 +83,7 @@ const initialGroups: StudyGroup[] = [
   {
     id: 5,
     name: "Physics Lab Prep",
-    subject: "Physics",
+    subject: "PHYS144",
     description: "Prepare for physics lab experiments and understand theoretical concepts.",
     members: 7,
     maxMembers: 15,
@@ -96,7 +96,7 @@ const initialGroups: StudyGroup[] = [
   {
     id: 6,
     name: "Spanish Language Exchange",
-    subject: "Languages",
+    subject: "AUSPA101",
     description: "Practice speaking Spanish and learn about Hispanic culture.",
     members: 14,
     maxMembers: 20,
