@@ -28,7 +28,7 @@ async def create_item(item: ItemCreate):
     INSERT INTO events (organizer_id, name, description, location_id, start_time)
     VALUES (?, ?, ?, ?, ?)
     """
-    params = (item.organizer_id, item.name, item.description, item.location_id, item.start_time)
+    params = (item.owner_id, item.name, item.description, item.building, item.meeting_day)
     try:
         with sqlite3.connect("database.db") as conn:
             session_id = execute_query(query, params)

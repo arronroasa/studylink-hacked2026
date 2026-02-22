@@ -50,16 +50,43 @@ export function CreateGroup() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
+      const response = await fetch('http://localhost:8000/items/create/',{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // 'Authorization': `Bearer ${yourToken}` // Uncomment if your API requires a token
+        },
+        body: JSON.stringify({
+          owner_id: 5,
+          name: formData.groupName,
+          course_code: formData.subject,
+          description: formData.description,
+          max_members: parseInt(formData.maxMembers),
+          meeting_day: formData.meetingDay,
+          meeting_time: formData.meetingTime,
+          building: formData.building,
+          room: formData.floor,
+          next_meeting: `${formData.meetingDay}, ${formData.meetingTime}`,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Optional: AWAIT newly created group data sent back from server
+      // const createdGroup = await response.json()
+
       addGroup({
         name: formData.groupName,
         subject: formData.subject,
         description: formData.description,
         maxMembers: parseInt(formData.maxMembers),
-        members: 0,
+        members: 1,
         meetingDay: formData.meetingDay,
         meetingTime: formData.meetingTime,
         building: formData.building,
@@ -67,6 +94,8 @@ export function CreateGroup() {
         nextMeeting: `${formData.meetingDay}, ${formData.meetingTime}`,
       });
       navigate("/");
+    } catch (error) {
+      console.error(`Failed to create group: ${error}`);
     }
   };
 
