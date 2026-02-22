@@ -28,7 +28,7 @@ async def create_item(item: ItemCreate):
     INSERT INTO events (organizer_id, name, description, location_id, start_time)
     VALUES (?, ?, ?, ?, ?)
     """
-    params = (item.organizer_id, item.name, item.description, item.location_id, item.start_time)
+    params = (item.owner_id, item.name, item.description, item.building, item.meeting_day)
     try:
         with sqlite3.connect("database.db") as conn:
             session_id = execute_query(query, params)
@@ -133,7 +133,7 @@ async def get_my_groups(item: GetItems):
 
 
 @router.get("/group_detail/",
-    response_mode=GroupDetail,
+    response_model=GroupDetail,
     status_code = status.HTTP_200_OK
 )
 async def get_group_detail(item: GetItem):
@@ -147,3 +147,4 @@ async def get_group_detail(item: GetItem):
     except Exception as e:
         print(f"Not Implemented {e}")
         raise HTTPException(status_code=500, detail="Failed to get request")
+    
