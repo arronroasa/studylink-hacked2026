@@ -24,7 +24,7 @@ async def create_item(item: ItemCreate):
     """
         Creating a group and using execute_query()
     """
-    
+
     # Testing purposes:
     # return {"id": 5, "message": "Session Created Successfully!"}
     query = """
@@ -50,11 +50,13 @@ async def add_item(item: ItemChange):
     """
         Joining a group and execute_query to run command
     """
+
+    # Testing purposes
+    return {"message": "Successfully joined session"}
     query = "INSERT INTO attendees (eid, uid) VALUES (?, ?)"
-    params = (item.eid, item.uid)
+    params = (item.group_id, item.user_id)
     try:
         execute_query(query, params)
-        
         return {"message": "Successfully joined session"}
     
     except sqlite3.IntegrityError as e:
