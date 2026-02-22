@@ -1,10 +1,11 @@
 from fastapi import APIRouter, HTTPException, status
-from schemas.items import ItemCreate, ItemResponse, ItemAdd, AddResponse
+from typing import List
+from schemas.items import ItemCreate, ItemResponse, ItemChange, ChangeResponse, GetItems, GetGroup, GetItem, GroupDetail
 import sqlite3
 
 router = APIRouter(prefix="/items", tags=["items"])
 
-# WORK ON DATABASE MANIPULATION HERE
+#### DATABASE POST REQUESTS
 @router.get("/{item_id}", response_model=ItemResponse)
 async def get_item(item_id: int):
     query = "SELECT * FROM events where eid = ?"
@@ -14,12 +15,15 @@ async def get_item(item_id: int):
         raise HTTPException(status_code = 404, detail = "Item not found")
     
     return dict(result[0])
-        
-@router.post("/",
+
+@router.post("/create/",
     response_model=ItemResponse,
     status_code=status.HTTP_201_CREATED
 )
 async def create_item(item: ItemCreate):
+    """
+        Creating a group and using execute_query()
+    """
     query = """
     INSERT INTO events (organizer_id, name, description, location_id, start_time)
     VALUES (?, ?, ?, ?, ?)
@@ -35,12 +39,14 @@ async def create_item(item: ItemCreate):
         print(f"Database error: {e}")
         raise HTTPException(status_code=500, detail="Failed to create session.")
     
-@router.post("/",
-    response_model=AddResponse,
-    status_code=status.HTTP_201_
+@router.post("/join/",
+    response_model=ChangeResponse,
+    status_code=status.HTTP_200_OK
 )
-async def add_item(item: ItemAdd):
-    # QUERY DB HERE
+async def add_item(item: ItemChange):
+    """
+        Joining a group and execute_query to run command
+    """
     query = "INSERT INTO attendees (eid, uid) VALUES (?, ?)"
     params = (item.eid, item.uid)
     try:
@@ -58,7 +64,34 @@ async def add_item(item: ItemAdd):
     
     except Exception as e:
         print(f"Unexpected error: {e}")
-        raise HTTPException(status_code = 500, detail = "Failed to join session")
+        raise HTTPException(status_code = 500, detail = "Failed to join session")  
+
+@router.post("/leave/",
+    response_model=ChangeResponse,
+    status_code=status.HTTP_200_OK          
+)
+async def remove_item(item: ItemChange):
+    """
+        Leaving a group and using execute_query()
+    """
+    query = """
+
+    """
+    try:
+        raise NotImplementedError
+    except sqlite3.IntegrityError as e:
+        error_message = str(e).lower()
+        if "unique" in error_message:
+            raise HTTPException(status_code=400, detail="Not in group")
+        if "foreign key" in error_message:
+            raise HTTPException(status_code=404, detail="User or Session does not exist")
+        raise HTTPException(status_code=400, detail="Unexpected Database error")
+
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to leave session")
+
+
 
 def execute_query(query: str, params: tuple =(), fetch: bool = False):
     '''
@@ -75,3 +108,42 @@ def execute_query(query: str, params: tuple =(), fetch: bool = False):
             return cursor.fetchall
         return cursor.lastrowid
     
+##### DATABASE GET REQUESTS
+@router.get("/my_groups/",
+    response_model=List[GetGroup],
+    status_code=status.HTTP_200_OK
+)
+async def get_my_groups(item: GetItems):
+    """
+        Retrieving different groups with filters
+    """
+
+    query=None
+    if GetItems.user_id == None:
+        # THIS IS BROWSING REQUEST
+        pass
+    else:
+        pass
+
+    try:
+        raise NotImplementedError
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get request")
+
+
+@router.get("/group_detail/",
+    response_mode=GroupDetail,
+    status_code = status.HTTP_200_OK
+)
+async def get_group_detail(item: GetItem):
+    """
+        Retrieving more details of a single group
+    """
+    query=None
+
+    try:
+        raise NotImplementedError
+    except Exception as e:
+        print(f"Not Implemented {e}")
+        raise HTTPException(status_code=500, detail="Failed to get request")
