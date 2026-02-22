@@ -73,6 +73,7 @@ CREATE INDEX idx_course_code ON events(course_code);
 CREATE INDEX idx_location_name ON locations(name);
 
 INSERT INTO users (username, email, password_hash) 
-VALUES ('testuser', 'test@example.com', 'hashed_password');
+VALUES ('testuser', 'test@example.com', 'hashed_password'),
+('testloser', 'isleep@example.com', 'hashed_password');
 
 SELECT uid FROM users;

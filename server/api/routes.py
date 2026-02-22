@@ -37,6 +37,9 @@ async def create_item(item: ItemCreate):
             
         location_id = lid_result[0]["lid"]
 
+        users = execute_query("SELECT uid FROM users", (), fetch=True)
+        print([row["uid"] for row in users])
+
         # Step 3: Create Event with all fields from your schema
         event_query = """
         INSERT INTO events (
