@@ -1,10 +1,11 @@
-// client/src/app/pages/Home.tsx
 import { Link } from "react-router";
 import { useStudyGroups } from "../context/StudyGroupContext";
 import { StudyGroupCard } from "../components/StudyGroupCard";
+import { useUser } from "../context/UserIDContext"; // 1. Added User Context Import
 
 export function Home() {
   const { groups, isJoined } = useStudyGroups();
+  const { userId } = useUser(); // 2. Grab the actual userId
 
   const myGroups = groups.filter((group) => isJoined(group.id));
   const recentGroups = myGroups.slice(0, 3);
@@ -21,9 +22,15 @@ export function Home() {
 
         {/* Header */}
         <div style={{ marginBottom: "32px" }}>
-          <h1 style={{ fontSize: "26px", fontWeight: "700", color: "#111827", marginBottom: "6px" }}>
+          <h1 style={{ fontSize: "26px", fontWeight: "700", color: "#111827", marginBottom: "2px" }}>
             Welcome to StudyLink
           </h1>
+
+          {/* User ID Label */}
+          <p style={{ fontSize: "12px", color: "#9ca3af", fontWeight: "600", marginBottom: "12px", letterSpacing: "0.5px" }}>
+            USER_ID: <span style={{ color: "#ca8a04", fontFamily: "monospace" }}>{userId ?? "GUEST"}</span>
+          </p>
+
           <p style={{ fontSize: "14px", color: "#6b7280" }}>
             Connect with students and join study groups to enhance your learning experience.
           </p>
