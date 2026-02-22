@@ -133,7 +133,7 @@ async def get_my_groups(item: GetItems):
 
 
 @router.get("/group_detail/",
-    response_mode=GroupDetail,
+    response_model=GroupDetail,
     status_code = status.HTTP_200_OK
 )
 async def get_group_detail(item: GetItem):
@@ -147,3 +147,4 @@ async def get_group_detail(item: GetItem):
     except Exception as e:
         print(f"Not Implemented {e}")
         raise HTTPException(status_code=500, detail="Failed to get request")
+    

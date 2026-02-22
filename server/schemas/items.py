@@ -4,7 +4,7 @@ from typing import List
 
 class ItemCreate(BaseModel):
     owner_id: int
-    course_code: str = Field(..., min_length=6, max_length=7)
+    course_code: str = Field(..., min_length=6, max_length=12)
     location: str = Field(..., min_length=1, max_length=250)
     datetime: datetime
     description: str | None = Field(default=None, min_length=1, max_length=250)
@@ -25,7 +25,7 @@ class ChangeResponse(ItemChange):
 class GetItems(BaseModel):
     user_id: int
     is_search: bool
-    course_code: str | None = Field(default=None, min_length=6, max_length=7)
+    course_code: str | None = Field(default=None, min_length=6, max_length=12)
 
 class GetGroup(GetItems):
     owner_id: int

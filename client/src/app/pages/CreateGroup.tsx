@@ -52,19 +52,22 @@ export function CreateGroup() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    addGroup({
-      name: formData.groupName,
-      subject: formData.subject,
-      description: formData.description,
-      maxMembers: parseInt(formData.maxMembers),
-      members: 0,
-      meetingDay: formData.meetingDay,
-      meetingTime: formData.meetingTime,
-      building: formData.building,
-      floor: formData.floor,
-      nextMeeting: `${formData.meetingDay}, ${formData.meetingTime}`,
-    });
-    navigate("/");
+
+    try {
+      addGroup({
+        name: formData.groupName,
+        subject: formData.subject,
+        description: formData.description,
+        maxMembers: parseInt(formData.maxMembers),
+        members: 0,
+        meetingDay: formData.meetingDay,
+        meetingTime: formData.meetingTime,
+        building: formData.building,
+        floor: formData.floor,
+        nextMeeting: `${formData.meetingDay}, ${formData.meetingTime}`,
+      });
+      navigate("/");
+    }
   };
 
   const hasPreview = formData.groupName.trim().length > 0;
