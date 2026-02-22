@@ -1,46 +1,78 @@
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status
 from typing import List
 from schemas.items import ItemCreate, ItemResponse, ItemChange, ChangeResponse, GetItems, GetGroup, GetItem, GroupDetail, ItemDelete
 import sqlite3
+import os
+import traceback
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "..", "database", "database.db")
 
 router = APIRouter(prefix="/items", tags=["items"])
-
-def execute_query(query: str, params: tuple = (), fetch: bool = False):
-    '''
-    Helper function for SQL queries
-    '''
-    with sqlite3.connect("database.db") as conn:
-        conn.execute("PRAGMA foreign_keys = ON")
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cursor.execute(query, params)
-        conn.commit() # Fixed: added parentheses to commit
-
-        if fetch:
-            return cursor.fetchall() # Fixed: added parentheses to fetchall
-        return cursor.lastrowid
 
 #### DATABASE POST REQUESTS
 @router.get("/{item_id}", response_model=ItemResponse)
 async def get_item(item_id: int):
     query = "SELECT * FROM events where eid = ?"
-    result = execute_query(query, (item_id,), fetch=True) # Fixed: ensure tuple (item_id,)
+    result = execute_query(query, (item_id,), fetch=True)
 
     if not result:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(status_code = 404, detail = "Item not found")
     
     return dict(result[0])
 
-@router.post("/create/",
-    response_model=ItemResponse,
-    status_code=status.HTTP_201_CREATED
-)
+@router.post("/create/", response_model=ItemResponse, status_code=status.HTTP_201_CREATED)
 async def create_item(item: ItemCreate):
-    """
-        Creating a group and using execute_query()
-    """
-    # Testing purposes:
-    return {"id": item.owner_id, "message": "Session created successfully!"}
+    try:
+        # Step 1: Handle Location (Now requires the UNIQUE constraint in SQL)
+        building_query = "INSERT OR IGNORE INTO locations (name) VALUES (?)"
+        execute_query(building_query, (item.building,))
+
+        # Step 2: Fetch the ID
+        lid_query = "SELECT lid FROM locations WHERE name = ?"
+        lid_result = execute_query(lid_query, (item.building,), fetch=True)
+        
+        if not lid_result:
+            raise HTTPException(status_code=404, detail="Location could not be resolved.")
+            
+        location_id = lid_result[0]["lid"]
+
+        # Step 3: Create Event with all fields from your schema
+        event_query = """
+        INSERT INTO events (
+            organizer_id, name, course_code, description, 
+            location_id, room, meeting_day, meeting_time, 
+            max_members, start_time
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """
+        
+        # Ensure this tuple matches the order of columns in the query above
+        params = (
+            item.owner_id, 
+            item.name, 
+            item.course_code,
+            item.description, 
+            location_id, 
+            item.room,
+            item.meeting_day,
+            item.meeting_time,
+            item.max_members,
+            item.next_meeting
+        )
+
+        session_id = execute_query(event_query, params)
+        return {"id": session_id, "message": "Session Created Successfully!"}
+
+    except sqlite3.IntegrityError as e:
+        print(f"Integrity Error: {e}")
+        raise HTTPException(
+            status_code=400, 
+            detail="Database integrity error. Check if owner_id exists."
+        )
+    except Exception as e:
+        traceback.print_exc()  # This will show the exact line and error
+        raise HTTPException(status_code=500, detail=f"Internal Error: {str(e)}")
 
 @router.post("/delete/",
     response_model=ItemResponse,
@@ -50,8 +82,36 @@ async def delete_item(item: ItemDelete):
     """
         Deleting group and using execute_query()
     """
-    return {"id": item.group_id, "message": "Group successfully deleted."}
 
+    # Testing purposes
+    # return {"id": item.group_id, "message": "Group successfully deleted."}
+    # FIRST RETRIEVE OWNER_ID FROM QUERY
+    # If user_id does not match owner_id then raise some error and return
+    id_query = "SELECT organizer_id FROM events WHERE eid = ?"
+    try:
+        result = execute_query(id_query, (item.group_id,), fetch=True)
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Session not found")
+        
+        actual_owner_id = result[0]["organizer_id"]
+
+        if actual_owner_id != item.user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to delete this event."
+            )
+        
+        delete_query = "DELETE FROM events WHERE eid = ?"
+        execute_query(delete_query, (item.group_id,))
+
+        return {"id": item.group_id, "message": "Event successfully deleted"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+    
 @router.post("/join/",
     response_model=ChangeResponse,
     status_code=status.HTTP_200_OK
@@ -60,8 +120,26 @@ async def add_item(item: ItemChange):
     """
         Joining a group and execute_query to run command
     """
+
     # Testing purposes
-    return {"message": "Successfully joined session"}
+    # return {"message": "Successfully joined session"}
+    query = "INSERT INTO attendees (eid, uid) VALUES (?, ?)"
+    params = (item.group_id, item.user_id)
+    try:
+        execute_query(query, params)
+        return {"message": "Successfully joined session"}
+    
+    except sqlite3.IntegrityError as e:
+        error_message = str(e).lower()
+        if "unique" in error_message:
+            raise HTTPException(status_code = 400, detail = "Already attending")
+        if "foreign key" in error_message:
+            raise HTTPException(status_code = 404, detail = "User or Session does not exist")
+        raise HTTPException(status_code = 400, detail = "Databse integrity error")
+    
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        raise HTTPException(status_code = 500, detail = "Failed to join session")  
 
 @router.post("/leave/",
     response_model=ChangeResponse,
@@ -72,46 +150,99 @@ async def remove_item(item: ItemChange):
         Leaving a group and using execute_query()
     """
     # !!!!Testing purposes only!!!!
-    return {"message": "Successfully left session"}
+    #return {"message": "Successfully left session"}
 
+    check_query = "SELECT 1 FROM attendees WHERE eid = ? and uid = ?"
+    delete_query = "DELETE FROM attendees WHERE eid = ? and uid = ?"
+    params = (item.group_id, item.user_id)
+
+    try:
+        membership = execute_query(check_query, params, fetch=True)
+
+        if not membership:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User is not a member of this session"
+            )
+        
+        execute_query(delete_query, params)
+
+        return {"message": 'Successfully left session'}
+    
+    except HTTPException:
+        raise
+    except sqlite3.IntegrityError as e:
+        error_message = str(e).lower()
+        if "unique" in error_message:
+            raise HTTPException(status_code=400, detail="Not in group")
+        if "foreign key" in error_message:
+            raise HTTPException(status_code=404, detail="User or Session does not exist")
+        raise HTTPException(status_code=400, detail="Unexpected Database error")
+
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to leave session")
+
+
+
+def execute_query(query: str, params: tuple = (), fetch: bool = False):
+    """
+    Helper function for SQL queries
+    """
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute("PRAGMA foreign_keys = ON")
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        conn.commit()
+        if fetch:
+            return cursor.fetchall()
+        return cursor.lastrowid
+    
 ##### DATABASE GET REQUESTS
-
-
-
 @router.get("/groups/",
     response_model=List[GetGroup],
     status_code=status.HTTP_200_OK
 )
-# Fixed: Added Depends() so it reads from URL Query Parameters
-async def get_my_groups(item: GetItems = Depends()):
+async def get_my_groups(item: GetItems):
     """
         Retrieving different groups with filters
     """
-    # Fixed: Check 'item.is_search' (instance) NOT 'GetItems.is_search' (class)
-    if item.is_search:
-        # THIS IS BROWSING REQUEST
-        pass
-    else:
-        # THIS IS A GET GROUPS JOINED REQUEST
-        pass
-
     try:
-        raise NotImplementedError
+        if GetItems.is_search:
+            # THIS IS BROWSING REQUEST
+            query="SELECT * FROM events WHERE course_code LIKE ?"
+            params = f"%{item.search_query}%,"
+        else:
+            # THIS IS A GET GROUPS JOINED REQUEST
+            query = """
+                SELECT e.* FROM events e
+                JOIN attendees a ON e.eid = a.eid
+                WHERE a.uid = ?
+            """
+            params = (item.user_id,)
+        
+        results = execute_query(query, params, fetch=True)
+        return [dict(row) for row in results]
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Failed to get request")
 
-@router.get("/group_detail/",
-    response_model=GroupDetail,
-    status_code = status.HTTP_200_OK
-)
-# Fixed: Added Depends() here as well
-async def get_group_detail(item: GetItem = Depends()):
-    """
-        Retrieving more details of a single group
-    """
-    try:
-        raise NotImplementedError
-    except Exception as e:
-        print(f"Not Implemented {e}")
-        raise HTTPException(status_code=500, detail="Failed to get request")
+
+# DEPRECATED 
+# @router.get("/group_detail/",
+#     response_model=GroupDetail,
+#     status_code = status.HTTP_200_OK
+# )
+# async def get_group_detail(item: GetItem):
+#     """
+#         Retrieving more details of a single group
+#     """
+#     query=None
+
+#     try:
+#         raise NotImplementedError
+#     except Exception as e:
+#         print(f"Not Implemented {e}")
+#         raise HTTPException(status_code=500, detail="Failed to get request")
+    
