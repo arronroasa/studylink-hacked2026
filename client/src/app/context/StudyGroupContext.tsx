@@ -123,7 +123,26 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
     setJoinedGroupIds((prev) => new Set([...prev, newGroup.id]));
   };
 
-  const joinGroup = (groupId: number) => {
+  const joinGroup = async (groupId: number) => {
+    const response = await fetch(`http://localhost:8000/items/join/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        'group_id': groupId,
+        'user_id': 5,
+        'is_removing': false,
+      })
+      // If your backend needs to know WHO is joining, add it to the body:
+      // body: JSON.stringify({ userId: currentUserId })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to join group');
+    }
+
     setGroups((prev) =>
       prev.map((group) =>
         group.id === groupId && group.members < group.maxMembers
