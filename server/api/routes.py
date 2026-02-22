@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Query
 from typing import List
 from schemas.items import ItemCreate, ItemResponse, ItemChange, ChangeResponse, GetItems, GetGroup, GetItem, GroupDetail, ItemDelete
 import sqlite3
@@ -204,12 +204,12 @@ def execute_query(query: str, params: tuple = (), fetch: bool = False):
     response_model=List[GetGroup],
     status_code=status.HTTP_200_OK
 )
-async def get_my_groups(item: GetItems):
+async def get_my_groups(item: GetItems = Query(...)):
     """
         Retrieving different groups with filters
     """
     try:
-        if GetItems.is_search:
+        if item.is_search:
             # THIS IS BROWSING REQUEST
             query="SELECT * FROM events WHERE course_code LIKE ?"
             params = f"%{item.search_query}%,"
