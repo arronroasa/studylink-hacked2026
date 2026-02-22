@@ -131,7 +131,7 @@ These endpoints manage the creation, discovery, and membership of study groups.
   "max_members": 5,
   "next_meeting": "2026-03-01"
 }
-
+```
 ## 🤝 Contributing
 
 Contributions are welcome! This is an open-source project for HackED 2026.
