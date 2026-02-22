@@ -24,6 +24,9 @@ async def create_item(item: ItemCreate):
     """
         Creating a group and using execute_query()
     """
+    
+    # Testing purposes:
+    # return {"id": 5, "message": "Session Created Successfully!"}
     query = """
     INSERT INTO events (organizer_id, name, description, location_id, start_time)
     VALUES (?, ?, ?, ?, ?)

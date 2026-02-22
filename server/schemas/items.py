@@ -4,17 +4,17 @@ from typing import List
 
 class ItemCreate(BaseModel):
     owner_id: int = Field(5)
-    name: str = Field(..., min_length=6, max_length=48)
-    course_code: str = Field(..., min_length=6, max_length=12)
+    name: str = Field(..., min_length=0, max_length=48)
+    course_code: str = Field(..., min_length=0, max_length=12) # CHANGE HERE
     description: str | None = Field(default=None, min_length=1, max_length=250)
     max_members: int = Field(..., ge=1, le=50)
-    meeting_day: str = Field(..., min_length=5, max_length=8)
-    meeting_time: str = Field(..., min_length=4, max_length=8)
+    meeting_day: str = Field(..., min_length=0, max_length=8) # CHANGE HERE
+    meeting_time: str = Field(..., min_length=0, max_length=8) # CHANGE HERE
     building: str = Field(..., min_length=1, max_length=32)
     room: str = Field(..., min_length=1, max_length=8)
     next_meeting: str = Field(..., min_length=12, max_length=32)
 
-class ItemResponse(ItemCreate):
+class ItemResponse(BaseModel):
     id: int
     message: str
 
