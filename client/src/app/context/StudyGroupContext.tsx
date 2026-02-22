@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+// client/src/app/context/StudyGroupContext.tsx
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useUser } from "./UserIDContext";
 
 export interface StudyGroup {
@@ -19,108 +20,82 @@ export interface StudyGroup {
 interface StudyGroupContextType {
   groups: StudyGroup[];
   joinedGroupIds: Set<number>;
-  addGroup: (group: Omit<StudyGroup, "id" | "members" | "isOwner">) => void;
-  joinGroup: (groupId: number) => void;
-  leaveGroup: (groupId: number) => void;
-  deleteGroup: (groupId: number) => void;
+  addGroup: (group: Omit<StudyGroup, "id" | "members" | "isOwner">) => Promise<void>;
+  joinGroup: (groupId: number) => Promise<void>;
+  leaveGroup: (groupId: number) => Promise<void>;
+  deleteGroup: (groupId: number) => Promise<void>;
   isJoined: (groupId: number) => boolean;
+  refreshGroups: () => Promise<void>;
 }
 
 const StudyGroupContext = createContext<StudyGroupContextType | undefined>(undefined);
 
-const initialGroups: StudyGroup[] = [
-  {
-    id: 1,
-    name: "Advanced Calculus Study Group",
-    subject: "MATH146",
-    description: "Focus on derivatives, integrals, and applications of calculus in real-world scenarios.",
-    members: 12,
-    maxMembers: 15,
-    meetingDay: "Tuesday",
-    meetingTime: "3:00 PM",
-    building: "CCIS",
-    floor: "4th Floor",
-    nextMeeting: "Tomorrow, 3:00 PM",
-  },
-  {
-    id: 2,
-    name: "Web Development Bootcamp",
-    subject: "CMPUT201",
-    description: "Learn React, Node.js, and modern web development practices together.",
-    members: 8,
-    maxMembers: 10,
-    meetingDay: "Monday & Thursday",
-    meetingTime: "6:00 PM",
-    building: "Cameron Library",
-    floor: "2nd Floor",
-    nextMeeting: "Today, 6:00 PM",
-  },
-  {
-    id: 3,
-    name: "Organic Chemistry Review",
-    subject: "CHEM101",
-    description: "Review organic chemistry concepts, reactions, and problem-solving strategies.",
-    members: 15,
-    maxMembers: 20,
-    meetingDay: "Wednesday",
-    meetingTime: "2:00 PM",
-    building: "Chem Building",
-    floor: "3rd Floor",
-    nextMeeting: "Wed, 2:00 PM",
-  },
-  {
-    id: 4,
-    name: "Data Structures & Algorithms",
-    subject: "CMPUT175",
-    description: "Master DSA concepts for interviews and competitive programming.",
-    members: 10,
-    maxMembers: 12,
-    meetingDay: "Friday",
-    meetingTime: "4:00 PM",
-    building: "Athabasca Hall",
-    floor: "1st Floor",
-    nextMeeting: "Fri, 4:00 PM",
-  },
-  {
-    id: 5,
-    name: "Physics Lab Prep",
-    subject: "PHYS144",
-    description: "Prepare for physics lab experiments and understand theoretical concepts.",
-    members: 7,
-    maxMembers: 15,
-    meetingDay: "Thursday",
-    meetingTime: "5:00 PM",
-    building: "CCIS",
-    floor: "2nd Floor",
-    nextMeeting: "Thu, 5:00 PM",
-  },
-  {
-    id: 6,
-    name: "Spanish Language Exchange",
-    subject: "AUSPA101",
-    description: "Practice speaking Spanish and learn about Hispanic culture.",
-    members: 14,
-    maxMembers: 20,
-    meetingDay: "Saturday",
-    meetingTime: "10:00 AM",
-    building: "Humanities Centre",
-    floor: "5th Floor",
-    nextMeeting: "Sat, 10:00 AM",
-  },
-];
-
 export function StudyGroupProvider({ children }: { children: ReactNode }) {
-  const {userId} = useUser();
-  const [groups, setGroups] = useState<StudyGroup[]>(initialGroups);
+  const { userId } = useUser();
+  const [groups, setGroups] = useState<StudyGroup[]>([]);
   const [joinedGroupIds, setJoinedGroupIds] = useState<Set<number>>(new Set());
+  const API_BASE = (import.meta as any).env.API_BASE || "http://localhost:8000";
+
+  const refreshGroups = async () => {
+    // If we don't have a userId yet, don't attempt to fetch
+    if (userId === undefined || userId === null) {
+      setGroups([]);
+      return;
+    };
+
+    try {
+      const params = new URLSearchParams({
+        user_id: userId.toString(),
+        is_search: "true",
+        course_code: "SEARCH_ALL"
+      });
+
+      const response = await fetch(`${API_BASE}/items/groups/?${params.toString()}`, {
+        method: "GET"
+      });
+
+      if (!response.ok) {
+        // If backend returns 500 (NotImplemented), we catch it here to prevent UI crash
+        const errData = await response.json().catch(() => ({ detail: "Server Error" }));
+        console.warn("Backend fetch failed (likely NotImplementedError):", errData.detail);
+        return;
+      }
+
+      const data = await response.json();
+
+      // Mapping backend SQLite naming conventions to our Frontend interface
+      const translatedGroups: StudyGroup[] = data.map((g: any) => ({
+        id: g.eid,
+        name: g.name || "Untitled Group",
+        subject: g.course_code,
+        description: g.description || "No description provided.",
+        members: g.current_members || 1, // Fallback if count isn't in SQL yet
+        maxMembers: g.max_members || 10,
+        meetingDay: g.meeting_day,
+        meetingTime: g.meeting_time,
+        building: g.building,
+        floor: g.room,
+        nextMeeting: g.next_meeting,
+        isOwner: g.organizer_id === userId // Check if current user owns the group
+      }));
+
+      setGroups(translatedGroups);
+
+    } catch (error) {
+      console.error("Error syncing with backend:", error);
+    }
+  };
+
+  // Re-fetch groups automatically whenever the userId changes
+  useEffect(() => {
+    refreshGroups();
+  }, [userId]);
 
   const addGroup = async (group: Omit<StudyGroup, "id" | "members" | "isOwner">) => {
-    const response = await fetch('http://localhost:8000/items/create/',{
+    try {
+      const response = await fetch(`${API_BASE}/items/create/`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // 'Authorization': `Bearer ${yourToken}` // Uncomment if your API requires a token
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           owner_id: userId,
           name: group.name,
@@ -135,117 +110,81 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // Optional: AWAIT newly created group data sent back from server
-      // const createdGroup = await response.json()
-
-    const newGroup: StudyGroup = {
-      ...group,
-      id: Math.max(...groups.map((g) => g.id), 0) + 1,
-      members: 1,
-      isOwner: true,
-    };
-    setGroups((prev) => [newGroup, ...prev]);
-    setJoinedGroupIds((prev) => new Set([...prev, newGroup.id]));
+      if (!response.ok) throw new Error("Creation failed");
+      await refreshGroups();
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const joinGroup = async (groupId: number) => {
-    const response = await fetch(`http://localhost:8000/items/join/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        'group_id': groupId,
-        'user_id': userId,
-      })
-      // If your backend needs to know WHO is joining, add it to the body:
-      // body: JSON.stringify({ userId: currentUserId })
-    });
+    try {
+      const response = await fetch(`${API_BASE}/items/join/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ group_id: groupId, user_id: userId })
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'Failed to join group');
+      if (!response.ok) throw new Error('Failed to join');
+
+      // Update local joined state
+      setJoinedGroupIds(prev => new Set(prev).add(groupId));
+      await refreshGroups();
+    } catch (e) {
+      console.error(e);
     }
-
-    setGroups((prev) =>
-      prev.map((group) =>
-        group.id === groupId && group.members < group.maxMembers
-          ? { ...group, members: group.members + 1 }
-          : group
-      )
-    );
-    setJoinedGroupIds((prev) => new Set([...prev, groupId]));
   };
 
   const leaveGroup = async (groupId: number) => {
-    const response = await fetch(`http://localhost:8000/items/leave/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        'group_id': groupId,
-        'user_id': userId,
-      })
-      // If your backend needs to know WHO is joining, add it to the body:
-      // body: JSON.stringify({ userId: currentUserId })
-    });
+    try {
+      const response = await fetch(`${API_BASE}/items/leave/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ group_id: groupId, user_id: userId })
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'Failed to join group');
+      if (!response.ok) throw new Error('Failed to leave');
+
+      setJoinedGroupIds(prev => {
+        const next = new Set(prev);
+        next.delete(groupId);
+        return next;
+      });
+      await refreshGroups();
+    } catch (e) {
+      console.error(e);
     }
-
-    setGroups((prev) =>
-      prev.map((group) =>
-        group.id === groupId && group.members > 0
-          ? { ...group, members: group.members - 1 }
-          : group
-      )
-    );
-    setJoinedGroupIds((prev) => {
-      const next = new Set(prev);
-      next.delete(groupId);
-      return next;
-    });
   };
 
   const deleteGroup = async (groupId: number) => {
-    const response = await fetch(`http://localhost:8000/items/delete/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        'group_id': groupId,
-        'user_id': userId,
-      })
-      // If your backend needs to know WHO is joining, add it to the body:
-      // body: JSON.stringify({ userId: currentUserId })
-    });
+    try {
+      const response = await fetch(`${API_BASE}/items/delete/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ group_id: groupId, user_id: userId })
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'Failed to join group');
+      if (!response.ok) throw new Error('Failed to delete');
+      await refreshGroups();
+    } catch (e) {
+      console.error(e);
     }
-
-    setGroups((prev) => prev.filter((g) => g.id !== groupId));
-    setJoinedGroupIds((prev) => {
-      const next = new Set(prev);
-      next.delete(groupId);
-      return next;
-    });
   };
 
   const isJoined = (groupId: number) => joinedGroupIds.has(groupId);
 
   return (
     <StudyGroupContext.Provider
-      value={{ groups, joinedGroupIds, addGroup, joinGroup, leaveGroup, deleteGroup, isJoined }}
+      value={{
+        groups,
+        joinedGroupIds,
+        addGroup,
+        joinGroup,
+        leaveGroup,
+        deleteGroup,
+        isJoined,
+        refreshGroups
+      }}
     >
       {children}
     </StudyGroupContext.Provider>

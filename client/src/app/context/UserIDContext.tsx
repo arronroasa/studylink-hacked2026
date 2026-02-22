@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useStudyGroups } from "../context/StudyGroupContext";
 
 const UserContext = createContext({ userId: 5 });
 
@@ -8,6 +9,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     const saved = localStorage.getItem('user_id');
     return saved ? parseInt(saved, 10) : 5;
   });
+  const { refreshGroups } = useStudyGroups();
 
   // Optional: Listen for storage changes in case you change it in another tab
   useEffect(() => {
@@ -16,7 +18,13 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       if (saved) setUserId(parseInt(saved, 10));
     };
     window.addEventListener('storage', handleStorageChange);
+    const performRefresh = async () => {
+      console.log("Refreshing groups manually...");
+      await refreshGroups();
+    }
+    performRefresh()
     return () => window.removeEventListener('storage', handleStorageChange);
+
   }, []);
 
   return (
