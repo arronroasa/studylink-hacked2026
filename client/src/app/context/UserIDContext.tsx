@@ -1,34 +1,40 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useStudyGroups } from "../context/StudyGroupContext";
 
-const UserContext = createContext({ userId: 5 });
+interface UserContextType {
+  userId: number; // Changed from 5 to number
+  setGlobalUser: (id: number) => void; 
+}
+
+const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
-  // Initialize state directly from localStorage so it survives refreshes
-  const [userId, setUserId] = useState(() => {
+  const [userId, setUserId] = useState<number>(() => {
     const saved = localStorage.getItem('user_id');
     return saved ? parseInt(saved, 10) : 5;
   });
-  const { refreshGroups } = useStudyGroups();
 
-  // Optional: Listen for storage changes in case you change it in another tab
+  const setGlobalUser = (id: number) => {
+    localStorage.setItem('user_id', id.toString());
+    setUserId(id);
+  };
+
+  // Attach to window for your console testing
+  useEffect(() => {
+    (window as any).changeUser = setGlobalUser;
+  }, []);
+
   useEffect(() => {
     const handleStorageChange = () => {
       const saved = localStorage.getItem('user_id');
       if (saved) setUserId(parseInt(saved, 10));
     };
     window.addEventListener('storage', handleStorageChange);
-    const performRefresh = async () => {
-      console.log("Refreshing groups manually...");
-      await refreshGroups();
-    }
-    performRefresh()
     return () => window.removeEventListener('storage', handleStorageChange);
-
   }, []);
 
   return (
-    <UserContext.Provider value={{ userId }}>
+    // Corrected the key name to match setGlobalUser
+    <UserContext.Provider value={{ userId, setGlobalUser }}>
       {children}
     </UserContext.Provider>
   );
