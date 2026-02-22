@@ -93,6 +93,9 @@ The application will be available at `http://localhost:5173`.
 - `POST /api/users/login`: Login and get JWT token
 - `GET /api/users/me`: Get current user profile
 
+## Testing Commands
+- `localStorage.setItem('user_id', xxx);`: xxx - user_id number
+
 ## 🤝 Contributing
 
 Contributions are welcome! This is an open-source project for HackED 2026.
