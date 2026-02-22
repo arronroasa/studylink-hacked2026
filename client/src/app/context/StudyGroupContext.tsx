@@ -72,7 +72,7 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
           name: g.name || "Untitled Group",
           subject: g.course_code,
           description: g.description || "No description provided.",
-          members: g.current_members || 1,
+          members: g.members || 1,
           maxMembers: g.max_members || 10,
           meetingDay: g.meeting_day,
           meetingTime: g.meeting_time,

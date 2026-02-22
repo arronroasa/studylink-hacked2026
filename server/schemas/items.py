@@ -43,6 +43,7 @@ class GetGroup(BaseModel):
     name: str
     course_code: str | None
     description: Optional[str] = None
+    members: int
     max_members: int
     meeting_day: str
     meeting_time: str

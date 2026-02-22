@@ -216,6 +216,7 @@ async def get_my_groups(item: GetItems = Query(...)):
                 e.name,
                 e.course_code,
                 e.description,
+                (SELECT COUNT(*) FROM attendees WHERE eid = e.eid) AS members,
                 e.max_members,
                 e.meeting_day,
                 e.meeting_time,
