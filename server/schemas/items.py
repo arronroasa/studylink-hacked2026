@@ -4,16 +4,16 @@ from typing import List
 
 # Creating/Deleting Group
 class ItemCreate(BaseModel):
-    owner_id: int = Field(..., le=100) # le MUST BE CHANGED
-    name: str = Field(..., min_length=0, max_length=48)
-    course_code: str = Field(..., min_length=0, max_length=12) # CHANGE HERE
-    description: str | None = Field(default=None, min_length=1, max_length=250)
-    max_members: int = Field(..., ge=1, le=50)
-    meeting_day: str = Field(..., min_length=0, max_length=8) # CHANGE HERE
-    meeting_time: str = Field(..., min_length=0, max_length=8) # CHANGE HERE
-    building: str = Field(..., min_length=1, max_length=32)
-    room: str = Field(..., min_length=1, max_length=8)
-    next_meeting: str = Field(..., min_length=12, max_length=32)
+    owner_id: int 
+    name: str = Field(..., max_length=48)
+    course_code: str = Field(..., max_length=12)
+    description: str | None = Field(default=None, max_length=250)
+    max_members: int = Field(default=10, ge=1, le=100)
+    meeting_day: str = Field(..., max_length=20)
+    meeting_time: str = Field(..., max_length=20)
+    building: str = Field(..., max_length=100)
+    room: str = Field(..., max_length=20)
+    next_meeting: str
 
 class ItemResponse(BaseModel):
     id: int
