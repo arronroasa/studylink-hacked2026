@@ -213,6 +213,9 @@ async def get_my_groups(item: GetItems = Query(...)):
             # THIS IS BROWSING REQUEST
             query="SELECT * FROM events WHERE course_code LIKE ?"
             params = f"%{item.course_code}%,"
+        elif item.course_code is None:
+            query = "SELECT * FROM events"
+            params = ()
         else:
             # THIS IS A GET GROUPS JOINED REQUEST
             query = """
