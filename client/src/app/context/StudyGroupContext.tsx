@@ -34,6 +34,7 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
   const { userId } = useUser();
   const [groups, setGroups] = useState<StudyGroup[]>([]);
   const [joinedGroupIds, setJoinedGroupIds] = useState<Set<number>>(new Set());
+  const API_BASE = (import.meta as any).env.API_BASE || "http://localhost:8000";
 
   const refreshGroups = async () => {
     if (userId === undefined || userId === null) return;
@@ -47,7 +48,7 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
       });
 
       // 2. Send a CLEAN GET request (No headers, no body)
-      const response = await fetch(`http://localhost:8000/items/groups/?${params.toString()}`, {
+      const response = await fetch(`${API_BASE}/items/groups/?${params.toString()}`, {
         method: "GET"
       });
 
@@ -80,7 +81,7 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
 
   const addGroup = async (group: Omit<StudyGroup, "id" | "members" | "isOwner">) => {
     try {
-      const response = await fetch('http://localhost:8000/items/create/', {
+      const response = await fetch(`${API_BASE}/items/create/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -106,7 +107,7 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
 
   const joinGroup = async (groupId: number) => {
     try {
-      const response = await fetch(`http://localhost:8000/items/join/`, {
+      const response = await fetch(`${API_BASE}/items/join/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ group_id: groupId, user_id: userId })
@@ -121,7 +122,7 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
 
   const leaveGroup = async (groupId: number) => {
     try {
-      const response = await fetch(`http://localhost:8000/items/leave/`, {
+      const response = await fetch(`${API_BASE}/items/leave/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ group_id: groupId, user_id: userId })
@@ -136,7 +137,7 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
 
   const deleteGroup = async (groupId: number) => {
     try {
-      const response = await fetch(`http://localhost:8000/items/delete/`, {
+      const response = await fetch(`${API_BASE}/items/delete/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ group_id: groupId, user_id: userId })
