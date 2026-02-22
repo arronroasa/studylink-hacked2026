@@ -1,34 +1,22 @@
+// client/src/app/pages/Home.tsx
 import { Card } from "../components/ui/card";
 import { Button } from "../components/ui/button";
-import { Users, Calendar, BookOpen, MapPin } from "lucide-react";
+import { Users, Calendar, BookOpen } from "lucide-react";
 import { Link } from "react-router";
 import { useStudyGroups } from "../context/StudyGroupContext";
+import { StudyGroupCard } from "../components/StudyGroupCard";
 
 export function Home() {
-  const { groups, joinGroup, leaveGroup, isJoined } = useStudyGroups();
+  const { groups, isJoined } = useStudyGroups();
 
-  // Show the 3 most recent groups
-  const recentGroups = groups.slice(0, 3);
+  // Filter groups the user has joined
+  const myGroups = groups.filter(group => isJoined(group.id));
+  const recentGroups = myGroups.slice(0, 3); // limit to 3 most recent
 
   const stats = [
-    {
-      label: "Active Groups",
-      value: "24",
-      icon: Users,
-      color: "#16a34a",
-    },
-    {
-      label: "Upcoming Sessions",
-      value: "8",
-      icon: Calendar,
-      color: "#ca8a04",
-    },
-    {
-      label: "Total Members",
-      value: "156",
-      icon: BookOpen,
-      color: "#16a34a",
-    },
+    { label: "Active Groups", value: "24", icon: Users, color: "#16a34a" },
+    { label: "Upcoming Sessions", value: "8", icon: Calendar, color: "#ca8a04" },
+    { label: "Total Members", value: "156", icon: BookOpen, color: "#16a34a" },
   ];
 
   return (
@@ -55,10 +43,7 @@ export function Home() {
                       {stat.value}
                     </p>
                   </div>
-                  <div
-                    className="p-3 rounded-full"
-                    style={{ backgroundColor: `${stat.color}15` }}
-                  >
+                  <div className="p-3 rounded-full" style={{ backgroundColor: `${stat.color}15` }}>
                     <Icon className="h-6 w-6" style={{ color: stat.color }} />
                   </div>
                 </div>
@@ -76,50 +61,9 @@ export function Home() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-[#FFFAE0] p-4 rounded-lg">
             {recentGroups.map((group) => (
-              <Card key={group.id} className="p-6 hover:shadow-lg transition-shadow">
-                <div className="mb-4">
-                  <h3 className="mb-1">{group.name}</h3>
-                  <p className="text-sm" style={{ color: "#16a34a" }}>
-                    {group.subject}
-                  </p>
-                </div>
-
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Users className="h-4 w-4" />
-                    <span>{group.members} members</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    <span>{group.nextMeeting}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    <span>{group.building}, {group.floor}</span>
-                  </div>
-                </div>
-
-                {isJoined(group.id) ? (
-                  <Button
-                    className="w-full"
-                    variant="outline"
-                    onClick={() => leaveGroup(group.id)}
-                  >
-                    Leave Group
-                  </Button>
-                ) : (
-                  <Button
-                    className="w-full"
-                    style={{ backgroundColor: "#16a34a" }}
-                    onClick={() => joinGroup(group.id)}
-                    disabled={group.members >= group.maxMembers}
-                  >
-                    {group.members >= group.maxMembers ? "Group Full" : "Join Group"}
-                  </Button>
-                )}
-              </Card>
+              <StudyGroupCard key={group.id} group={group} />
             ))}
           </div>
         </div>
