@@ -23,7 +23,6 @@ class ItemResponse(BaseModel):
 class ItemChange(BaseModel):
     group_id: int
     user_id: int
-    is_removing: bool
 
 class ChangeResponse(BaseModel):
     message: str
