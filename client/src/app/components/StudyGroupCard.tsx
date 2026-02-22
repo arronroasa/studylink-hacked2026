@@ -1,109 +1,210 @@
 // client/src/app/components/StudyGroupCard.tsx
-import { Card } from "./ui/card";
-import { Button } from "./ui/button";
-import { Users, Calendar, BookOpen, MapPin } from "lucide-react";
-import { InfoRow } from "./InfoRow";
+import { Users, Calendar, MapPin, Trash2 } from "lucide-react";
 import { useStudyGroups } from "../context/StudyGroupContext";
 
 interface StudyGroupCardProps {
-    group: {
-        id: string;
-        name: string;
-        subject: string;
-        description?: string;
-        members: number;
-        maxMembers: number;
-        meetingDay: string;
-        meetingTime: string;
-        building: string;
-        floor: string;
-        nextMeeting?: string;
-    };
+  group: {
+    id: number;
+    name: string;
+    subject: string;
+    description?: string;
+    members: number;
+    maxMembers: number;
+    meetingDay: string;
+    meetingTime: string;
+    building: string;
+    floor: string;
+    nextMeeting?: string;
+    isOwner?: boolean;
+  };
 }
 
 export function StudyGroupCard({ group }: StudyGroupCardProps) {
-    const { joinGroup, leaveGroup, isJoined } = useStudyGroups();
+  const { joinGroup, leaveGroup, isJoined, deleteGroup } = useStudyGroups();
+  const joined = isJoined(group.id);
+  const full = group.members >= group.maxMembers;
 
-    // UofA colors
-    const green = "#003C30"; // dark green background
-    const gold = "#FFB81C"; // gold accent
-
-    return (
-        <Card
-            className="p-6 hover:shadow-2xl transition-shadow"
-            style={{
-                backgroundColor: green,
-                color: "#ffffff",
-                border: `2px solid ${gold}`,
-                borderRadius: "12px",
-            }}
+  return (
+    <div
+      style={{
+        backgroundColor: "#ffffff",
+        border: "1px solid #e5e7eb",
+        borderRadius: "12px",
+        padding: "24px",
+        display: "flex",
+        flexDirection: "column",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.07)",
+        transition: "box-shadow 0.2s ease",
+      }}
+      onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.12)")}
+      onMouseLeave={e => (e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.07)")}
+    >
+      {/* Header row: name + trash icon if owner */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "6px" }}>
+        <h3
+          style={{
+            fontSize: "17px",
+            fontWeight: "700",
+            color: "#111827",
+            lineHeight: "1.3",
+            flex: 1,
+            marginRight: "8px",
+          }}
         >
-            {/* Header */}
-            <div className="mb-4">
-                <h3 className="mb-1 text-xl font-bold" style={{ color: gold }}>
-                    {group.name}
-                </h3>
-                <p className="text-sm mb-2" style={{ color: "#ffffff" }}>
-                    {group.subject}
-                </p>
-                {group.description && (
-                    <p className="text-sm text-gray-200">{group.description}</p>
-                )}
-            </div>
+          {group.name}
+        </h3>
+        {group.isOwner && (
+          <button
+            onClick={() => deleteGroup(group.id)}
+            title="Delete group"
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: "4px",
+              borderRadius: "6px",
+              color: "#9ca3af",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              transition: "color 0.15s, background 0.15s",
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.color = "#ef4444";
+              e.currentTarget.style.backgroundColor = "#fef2f2";
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.color = "#9ca3af";
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
+          >
+            <Trash2 style={{ width: "16px", height: "16px" }} />
+          </button>
+        )}
+      </div>
 
-            {/* Details */}
-            <div className="space-y-2 mb-4 pb-4 border-b border-green-800">
-                <InfoRow
-                    icon={<Users className="h-4 w-4" style={{ color: gold }} />}
-                    text={`${group.members} / ${group.maxMembers} members`}
-                    rightContent={
-                        <div className="w-20 h-2 bg-green-900 rounded-full overflow-hidden">
-                            <div
-                                className="h-full rounded-full"
-                                style={{
-                                    width: `${(group.members / group.maxMembers) * 100}%`,
-                                    backgroundColor: gold,
-                                }}
-                            />
-                        </div>
-                    }
-                />
-                <InfoRow
-                    icon={<Calendar className="h-4 w-4" style={{ color: gold }} />}
-                    text={group.meetingDay}
-                />
-                <InfoRow
-                    icon={<BookOpen className="h-4 w-4" style={{ color: gold }} />}
-                    text={group.meetingTime}
-                />
-                <InfoRow
-                    icon={<MapPin className="h-4 w-4" style={{ color: gold }} />}
-                    text={`${group.building}, ${group.floor}`}
-                />
-            </div>
+      {/* Subject tag + "Your group" badge */}
+      <div style={{ marginBottom: "16px", display: "flex", gap: "6px", flexWrap: "wrap" }}>
+        <span
+          style={{
+            display: "inline-block",
+            fontSize: "12px",
+            fontWeight: "600",
+            color: "#16a34a",
+            backgroundColor: "#f0fdf4",
+            border: "1px solid #bbf7d0",
+            borderRadius: "999px",
+            padding: "2px 10px",
+          }}
+        >
+          {group.subject}
+        </span>
+        {group.isOwner && (
+          <span
+            style={{
+              display: "inline-block",
+              fontSize: "11px",
+              fontWeight: "600",
+              color: "#92400e",
+              backgroundColor: "#fefce8",
+              border: "1px solid #fde68a",
+              borderRadius: "999px",
+              padding: "2px 8px",
+            }}
+          >
+            Your group
+          </span>
+        )}
+      </div>
 
-            {/* Action Button */}
-            {isJoined(group.id) ? (
-                <Button
-                    className="w-full font-bold"
-                    style={{ backgroundColor: gold, color: green }}
-                    onClick={() => leaveGroup(group.id)}
-                >
-                    Leave Group
-                </Button>
-            ) : (
-                <Button
-                    className="w-full font-bold"
-                    style={{
-                        backgroundColor: group.members >= group.maxMembers ? "#555" : gold,
-                        color: group.members >= group.maxMembers ? "#aaa" : green,
-                    }}
-                    disabled={group.members >= group.maxMembers}
-                    onClick={() => joinGroup(group.id)}
-                >
-                    {group.members >= group.maxMembers ? "Group Full" : "Join Group"}
-                </Button>
-            )}
-        </Card>
-    );
+      <div style={{ flex: 1 }} />
+
+      {/* Info rows */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "20px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#6b7280", fontSize: "13px" }}>
+          <Users style={{ width: "15px", height: "15px", flexShrink: 0 }} />
+          <span>{group.members} members</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#6b7280", fontSize: "13px" }}>
+          <Calendar style={{ width: "15px", height: "15px", flexShrink: 0 }} />
+          <span>{group.meetingDay ? `${group.meetingDay}, ${group.meetingTime}` : group.nextMeeting}</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#6b7280", fontSize: "13px" }}>
+          <MapPin style={{ width: "15px", height: "15px", flexShrink: 0 }} />
+          <span>{group.building}{group.floor ? `, ${group.floor}` : ""}</span>
+        </div>
+      </div>
+
+      {/* Action button */}
+      {group.isOwner ? (
+        <button
+          onClick={() => deleteGroup(group.id)}
+          style={{
+            width: "100%",
+            padding: "10px 0",
+            borderRadius: "8px",
+            border: "1.5px solid #fca5a5",
+            backgroundColor: "#fef2f2",
+            color: "#dc2626",
+            fontWeight: "600",
+            fontSize: "14px",
+            cursor: "pointer",
+            transition: "background 0.15s, border-color 0.15s",
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.backgroundColor = "#fee2e2";
+            e.currentTarget.style.borderColor = "#f87171";
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.backgroundColor = "#fef2f2";
+            e.currentTarget.style.borderColor = "#fca5a5";
+          }}
+        >
+          Delete Group
+        </button>
+      ) : joined ? (
+        <button
+          onClick={() => leaveGroup(group.id)}
+          style={{
+            width: "100%",
+            padding: "10px 0",
+            borderRadius: "8px",
+            border: "1.5px solid #d1d5db",
+            backgroundColor: "transparent",
+            color: "#374151",
+            fontWeight: "600",
+            fontSize: "14px",
+            cursor: "pointer",
+            transition: "background 0.15s",
+          }}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#f9fafb")}
+          onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
+        >
+          Leave Group
+        </button>
+      ) : (
+        <button
+          onClick={() => !full && joinGroup(group.id)}
+          disabled={full}
+          style={{
+            width: "100%",
+            padding: "10px 0",
+            borderRadius: "8px",
+            border: "none",
+            backgroundColor: full ? "#e5e7eb" : "#16a34a",
+            color: full ? "#9ca3af" : "#ffffff",
+            fontWeight: "600",
+            fontSize: "14px",
+            cursor: full ? "not-allowed" : "pointer",
+            transition: "background 0.15s",
+          }}
+          onMouseEnter={e => { if (!full) e.currentTarget.style.backgroundColor = "#15803d"; }}
+          onMouseLeave={e => { if (!full) e.currentTarget.style.backgroundColor = "#16a34a"; }}
+        >
+          {full ? "Group Full" : "Join Group"}
+        </button>
+      )}
+    </div>
+  );
 }

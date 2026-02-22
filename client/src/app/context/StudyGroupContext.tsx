@@ -12,14 +12,16 @@ export interface StudyGroup {
   building: string;
   floor: string;
   nextMeeting?: string;
+  isOwner?: boolean;
 }
 
 interface StudyGroupContextType {
   groups: StudyGroup[];
   joinedGroupIds: Set<number>;
-  addGroup: (group: Omit<StudyGroup, "id" | "members">) => void;
+  addGroup: (group: Omit<StudyGroup, "id" | "members" | "isOwner">) => void;
   joinGroup: (groupId: number) => void;
   leaveGroup: (groupId: number) => void;
+  deleteGroup: (groupId: number) => void;
   isJoined: (groupId: number) => boolean;
 }
 
@@ -110,47 +112,57 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
   const [groups, setGroups] = useState<StudyGroup[]>(initialGroups);
   const [joinedGroupIds, setJoinedGroupIds] = useState<Set<number>>(new Set());
 
-  const addGroup = (group: Omit<StudyGroup, "id" | "members">) => {
+  const addGroup = (group: Omit<StudyGroup, "id" | "members" | "isOwner">) => {
     const newGroup: StudyGroup = {
       ...group,
       id: Math.max(...groups.map((g) => g.id), 0) + 1,
-      members: 1, // Creator is the first member
+      members: 1,
+      isOwner: true,
     };
-    setGroups([newGroup, ...groups]);
-    setJoinedGroupIds(new Set([...joinedGroupIds, newGroup.id]));
+    setGroups((prev) => [newGroup, ...prev]);
+    setJoinedGroupIds((prev) => new Set([...prev, newGroup.id]));
   };
 
   const joinGroup = (groupId: number) => {
-    setGroups(
-      groups.map((group) =>
+    setGroups((prev) =>
+      prev.map((group) =>
         group.id === groupId && group.members < group.maxMembers
           ? { ...group, members: group.members + 1 }
           : group
       )
     );
-    setJoinedGroupIds(new Set([...joinedGroupIds, groupId]));
+    setJoinedGroupIds((prev) => new Set([...prev, groupId]));
   };
 
   const leaveGroup = (groupId: number) => {
-    setGroups(
-      groups.map((group) =>
+    setGroups((prev) =>
+      prev.map((group) =>
         group.id === groupId && group.members > 0
           ? { ...group, members: group.members - 1 }
           : group
       )
     );
-    const newJoinedIds = new Set(joinedGroupIds);
-    newJoinedIds.delete(groupId);
-    setJoinedGroupIds(newJoinedIds);
+    setJoinedGroupIds((prev) => {
+      const next = new Set(prev);
+      next.delete(groupId);
+      return next;
+    });
   };
 
-  const isJoined = (groupId: number) => {
-    return joinedGroupIds.has(groupId);
+  const deleteGroup = (groupId: number) => {
+    setGroups((prev) => prev.filter((g) => g.id !== groupId));
+    setJoinedGroupIds((prev) => {
+      const next = new Set(prev);
+      next.delete(groupId);
+      return next;
+    });
   };
+
+  const isJoined = (groupId: number) => joinedGroupIds.has(groupId);
 
   return (
     <StudyGroupContext.Provider
-      value={{ groups, joinedGroupIds, addGroup, joinGroup, leaveGroup, isJoined }}
+      value={{ groups, joinedGroupIds, addGroup, joinGroup, leaveGroup, deleteGroup, isJoined }}
     >
       {children}
     </StudyGroupContext.Provider>
