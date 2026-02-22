@@ -132,7 +132,6 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
       body: JSON.stringify({
         'group_id': groupId,
         'user_id': 5,
-        'is_removing': false,
       })
       // If your backend needs to know WHO is joining, add it to the body:
       // body: JSON.stringify({ userId: currentUserId })
