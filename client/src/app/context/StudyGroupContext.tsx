@@ -113,9 +113,10 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
   const {userId} = useUser();
   const [groups, setGroups] = useState<StudyGroup[]>(initialGroups);
   const [joinedGroupIds, setJoinedGroupIds] = useState<Set<number>>(new Set());
+  const API_BASE = (import.meta as any).env.API_BASE || "http://localhost:8000";
 
   const addGroup = async (group: Omit<StudyGroup, "id" | "members" | "isOwner">) => {
-    const response = await fetch('http://localhost:8000/items/create/',{
+    const response = await fetch(`${API_BASE}/items/create/`,{
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -153,7 +154,7 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
   };
 
   const joinGroup = async (groupId: number) => {
-    const response = await fetch(`http://localhost:8000/items/join/`, {
+    const response = await fetch(`${API_BASE}/items/join/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -182,7 +183,7 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
   };
 
   const leaveGroup = async (groupId: number) => {
-    const response = await fetch(`http://localhost:8000/items/leave/`, {
+    const response = await fetch(`${API_BASE}/items/leave/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -215,7 +216,7 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteGroup = async (groupId: number) => {
-    const response = await fetch(`http://localhost:8000/items/delete/`, {
+    const response = await fetch(`${API_BASE}/items/delete/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
