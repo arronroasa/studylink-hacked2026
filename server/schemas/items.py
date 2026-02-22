@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import List
 
-# Creating Group
+# Creating/Deleting Group
 class ItemCreate(BaseModel):
     owner_id: int = Field(5)
     name: str = Field(..., min_length=0, max_length=48)
@@ -18,6 +18,10 @@ class ItemCreate(BaseModel):
 class ItemResponse(BaseModel):
     id: int
     message: str
+
+class ItemDelete(BaseModel):
+    user_id: int = Field(5)
+    group_id: int
 
 # Joining/Leaving Group
 class ItemChange(BaseModel):
