@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from "react";
+import { useUser } from "./UserIDContext";
 
 export interface StudyGroup {
   id: number;
@@ -109,10 +110,38 @@ const initialGroups: StudyGroup[] = [
 ];
 
 export function StudyGroupProvider({ children }: { children: ReactNode }) {
+  const {userId} = useUser();
   const [groups, setGroups] = useState<StudyGroup[]>(initialGroups);
   const [joinedGroupIds, setJoinedGroupIds] = useState<Set<number>>(new Set());
 
-  const addGroup = (group: Omit<StudyGroup, "id" | "members" | "isOwner">) => {
+  const addGroup = async (group: Omit<StudyGroup, "id" | "members" | "isOwner">) => {
+    const response = await fetch('http://localhost:8000/items/create/',{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // 'Authorization': `Bearer ${yourToken}` // Uncomment if your API requires a token
+        },
+        body: JSON.stringify({
+          owner_id: userId,
+          name: group.name,
+          course_code: group.subject,
+          description: group.description,
+          max_members: group.maxMembers,
+          meeting_day: group.meetingDay,
+          meeting_time: group.meetingTime,
+          building: group.building,
+          room: group.floor,
+          next_meeting: `${group.meetingDay}, ${group.meetingTime}`,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Optional: AWAIT newly created group data sent back from server
+      // const createdGroup = await response.json()
+
     const newGroup: StudyGroup = {
       ...group,
       id: Math.max(...groups.map((g) => g.id), 0) + 1,
@@ -131,7 +160,7 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
       },
       body: JSON.stringify({
         'group_id': groupId,
-        'user_id': 5,
+        'user_id': userId,
       })
       // If your backend needs to know WHO is joining, add it to the body:
       // body: JSON.stringify({ userId: currentUserId })
@@ -160,7 +189,7 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
       },
       body: JSON.stringify({
         'group_id': groupId,
-        'user_id': 5,
+        'user_id': userId,
       })
       // If your backend needs to know WHO is joining, add it to the body:
       // body: JSON.stringify({ userId: currentUserId })
@@ -193,7 +222,7 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
       },
       body: JSON.stringify({
         'group_id': groupId,
-        'user_id': 5,
+        'user_id': userId,
       })
       // If your backend needs to know WHO is joining, add it to the body:
       // body: JSON.stringify({ userId: currentUserId })

@@ -4,7 +4,7 @@ from typing import List
 
 # Creating/Deleting Group
 class ItemCreate(BaseModel):
-    owner_id: int = Field(5)
+    owner_id: int = Field(..., le=100) # le MUST BE CHANGED
     name: str = Field(..., min_length=0, max_length=48)
     course_code: str = Field(..., min_length=0, max_length=12) # CHANGE HERE
     description: str | None = Field(default=None, min_length=1, max_length=250)
@@ -20,20 +20,20 @@ class ItemResponse(BaseModel):
     message: str
 
 class ItemDelete(BaseModel):
-    user_id: int = Field(5)
+    user_id: int = Field(..., le=100)
     group_id: int
 
 # Joining/Leaving Group
 class ItemChange(BaseModel):
     group_id: int
-    user_id: int
+    user_id: int = Field(..., le=100)
 
 class ChangeResponse(BaseModel):
     message: str
 
 # Retrieving/Searching/Browsing Groups
 class GetItems(BaseModel):
-    user_id: int
+    user_id: int = Field(..., le=100)
     is_search: bool
     course_code: str | None = Field(default=None, min_length=6, max_length=12) # CHANGE HERE
 
