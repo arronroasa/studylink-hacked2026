@@ -10,10 +10,23 @@ class ItemCreate(BaseModel):
 
 class ItemResponse(ItemCreate):
     id: int
+    message: str
 
-class ItemAdd(BaseModel):
+class ItemChange(BaseModel):
     group_id: int
     user_id: int
+    is_removing: bool
 
-class AddResponse(ItemAdd):
+class ChangeResponse(ItemChange):
     id: int
+    message: str
+
+class GetItems(BaseModel):
+    user_id: int | None
+
+class GetGroup(BaseModel):
+    owner_id: int
+    course_code: str
+    location: str
+    datetime: datetime
+    description: str
