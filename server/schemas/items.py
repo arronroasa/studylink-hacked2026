@@ -41,7 +41,7 @@ class GetGroup(BaseModel):
     owner_id: int
     course_code: str
     location: str
-    datetime: datetime
+    datetime: str
     has_joined: bool
 
 # Retrieving Group Specific Details
@@ -53,7 +53,7 @@ class GroupDetail(BaseModel):
     owner_id: int
     course_code: str
     location: str
-    datetime: datetime
+    datetime: str
     description: str
     attendees: List[str]
     has_joined: bool

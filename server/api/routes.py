@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Query
-from typing import List
+from typing import Dict, List
 from schemas.items import ItemCreate, ItemResponse, ItemChange, ChangeResponse, GetItems, GetGroup, GetItem, GroupDetail, ItemDelete
 import sqlite3
 import os
@@ -201,7 +201,7 @@ def execute_query(query: str, params: tuple = (), fetch: bool = False):
     
 ##### DATABASE GET REQUESTS
 @router.get("/groups/",
-    response_model=List[GetGroup],
+    # response_model=List[GetGroup],
     status_code=status.HTTP_200_OK
 )
 async def get_my_groups(item: GetItems = Query(...)):
@@ -211,11 +211,13 @@ async def get_my_groups(item: GetItems = Query(...)):
     try:
         if item.is_search:
             # THIS IS BROWSING REQUEST
-            query="SELECT * FROM events WHERE course_code LIKE ?"
-            params = f"%{item.course_code}%,"
-        elif item.course_code is None:
-            query = "SELECT * FROM events"
-            params = ()
+            if item.course_code is None:
+                query = "SELECT * FROM events"
+                params = ()
+            else:
+                query="SELECT * FROM events WHERE course_code LIKE ?"
+                params = f"%{item.course_code}%,"
+        
         else:
             # THIS IS A GET GROUPS JOINED REQUEST
             query = """
