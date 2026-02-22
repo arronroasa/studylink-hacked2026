@@ -37,13 +37,14 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
   const API_BASE = (import.meta as any).env.API_BASE || "http://localhost:8000";
 
   const refreshGroups = async () => {
-    // If we don't have a userId yet, don't attempt to fetch
     if (userId === undefined || userId === null) {
       setGroups([]);
+      setJoinedGroupIds(new Set());
       return;
-    };
+    }
 
     try {
+      // 1. Fetch ALL groups (The Search results)
       const params = new URLSearchParams({
         user_id: userId.toString(),
         is_search: "true"
@@ -53,39 +54,45 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
         method: "GET"
       });
 
-      if (!response.ok) {
-        // If backend returns 500 (NotImplemented), we catch it here to prevent UI crash
-        const errData = await response.json().catch(() => ({ detail: "Server Error" }));
-        console.warn("Backend fetch failed (likely NotImplementedError):", errData.detail);
-        return;
-      }
-
+      if (!response.ok) return;
       const data = await response.json();
 
-      // Mapping backend SQLite naming conventions to our Frontend interface
-      const translatedGroups: StudyGroup[] = data.map((g: any) => ({
-        id: g.eid,
-        name: g.name || "Untitled Group",
-        subject: g.course_code,
-        description: g.description || "No description provided.",
-        members: g.current_members || 1, // Fallback if count isn't in SQL yet
-        maxMembers: g.max_members || 10,
-        meetingDay: g.meeting_day,
-        meetingTime: g.meeting_time,
-        building: g.building,
-        floor: g.room,
-        nextMeeting: g.next_meeting,
-        isOwner: g.organizer_id === userId // Check if current user owns the group
-      }));
+      // 2. Extract joined status
+      // If your backend SQL already includes "has_joined", we build the Set here
+      const newJoinedIds = new Set<number>();
 
+      const translatedGroups: StudyGroup[] = data.map((g: any) => {
+        // If the backend says the user is in this group, add it to our Set
+        if (g.has_joined === 1 || g.has_joined === true) {
+          newJoinedIds.add(g.eid);
+        }
+
+        return {
+          id: g.eid,
+          name: g.name || "Untitled Group",
+          subject: g.course_code,
+          description: g.description || "No description provided.",
+          members: g.current_members || 1,
+          maxMembers: g.max_members || 10,
+          meetingDay: g.meeting_day,
+          meetingTime: g.meeting_time,
+          building: g.building,
+          floor: g.room,
+          nextMeeting: g.next_meeting,
+          isOwner: g.organizer_id === userId
+        };
+      });
+
+      // 3. Update both states. 
+      // This will trigger isJoined() to return true for the correct cards.
       setGroups(translatedGroups);
+      setJoinedGroupIds(newJoinedIds);
 
     } catch (error) {
       console.error("Error syncing with backend:", error);
     }
   };
 
-  // Re-fetch groups automatically whenever the userId changes
   useEffect(() => {
     refreshGroups();
   }, [userId]);
@@ -125,9 +132,6 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) throw new Error('Failed to join');
-
-      // Update local joined state
-      setJoinedGroupIds(prev => new Set(prev).add(groupId));
       await refreshGroups();
     } catch (e) {
       console.error(e);
@@ -143,12 +147,6 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
       });
 
       if (!response.ok) throw new Error('Failed to leave');
-
-      setJoinedGroupIds(prev => {
-        const next = new Set(prev);
-        next.delete(groupId);
-        return next;
-      });
       await refreshGroups();
     } catch (e) {
       console.error(e);

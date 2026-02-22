@@ -231,7 +231,10 @@ async def get_my_groups(item: GetItems = Query(...)):
             params = (item.user_id,)
         
         results = execute_query(query, params, fetch=True)
-        return [dict(row) for row in results]
+        groups = [dict(row) for row in results]
+        for group in groups:
+            group["has_joined"] = False
+        return groups
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Failed to get request")
