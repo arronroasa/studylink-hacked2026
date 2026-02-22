@@ -52,18 +52,32 @@ async def delete_item(item: ItemDelete):
     """
 
     return {"id": item.group_id, "message": "Group successfully deleted."}
-
     # FIRST RETRIEVE OWNER_ID FROM QUERY
     # If user_id does not match owner_id then raise some error and return
-    id_query = None
+    id_query = "SELECT organizer_id FROM events WHERE eid = ?"
     try:
-        raise NotImplementedError
+        result = execute_query(id_query,(item.eid), fetch=True)
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Session not found")
+        
+        actual_owner_id = result[0]["organizer_id"]
+
+        if actual_owner_id != item.uid:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to delete this event."
+            )
+        
+        delete_query = "DELETE FROM events where eid = ?"
+        execute_query(delete_query, (item.eid))
+
+        return {"id": item.eid, "message": "Event successfully deleted"}
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Unexpected error: {e}")
-
-    query = """
-
-    """
+        raise HTTPException(status_code=500, detail="Internal server error")
     
 @router.post("/join/",
     response_model=ChangeResponse,
@@ -105,11 +119,25 @@ async def remove_item(item: ItemChange):
     # !!!!Testing purposes only!!!!
     return {"message": "Successfully left session"}
 
-    query = """
+    check_query = "SELECT 1 FROM attendees WHERE eid = ? and uid = ?"
+    delete_query = "DELETE FROM attendees WHERE eid = ? and uid = ?"
+    params = (item.eid, item.uid)
 
-    """
     try:
-        raise NotImplementedError
+        membership = execute_query(check_query, params, fetch=True)
+
+        if not membership:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User is not a member of this session"
+            )
+        
+        execute_query(delete_query, params)
+
+        return {"message": "Successfully left session", "status": "success"}
+    
+    except HTTPException:
+        raise
     except sqlite3.IntegrityError as e:
         error_message = str(e).lower()
         if "unique" in error_message:
@@ -148,15 +176,25 @@ async def get_my_groups(item: GetItems):
     """
         Retrieving different groups with filters
     """
-
-    query=None
     if GetItems.is_search:
         # THIS IS BROWSING REQUEST
-        pass
+        query= """
+            SELECT * FROM events
+            WHERE name LIKE ? or description LIKE ?
+        """
+        search_term = f"%{item.search_query}"
+        params = (search_term, search_term)
     else:
         # THIS IS A GET GROUPS JOINED REQUEST
-        pass
-
+        query = """
+            SELECT e.* FROM events e
+            JOIN attendees a ON e.eid = a.eid
+            WHERE a.uid = ?
+        """
+        params = (item.uid)
+    
+    results = execute_query(query, params, fetch=True)
+    return [dict(row) for row in results]
     try:
         raise NotImplementedError
     except Exception as e:
@@ -165,19 +203,19 @@ async def get_my_groups(item: GetItems):
 
 
 # DEPRECATED 
-@router.get("/group_detail/",
-    response_model=GroupDetail,
-    status_code = status.HTTP_200_OK
-)
-async def get_group_detail(item: GetItem):
-    """
-        Retrieving more details of a single group
-    """
-    query=None
+# @router.get("/group_detail/",
+#     response_model=GroupDetail,
+#     status_code = status.HTTP_200_OK
+# )
+# async def get_group_detail(item: GetItem):
+#     """
+#         Retrieving more details of a single group
+#     """
+#     query=None
 
-    try:
-        raise NotImplementedError
-    except Exception as e:
-        print(f"Not Implemented {e}")
-        raise HTTPException(status_code=500, detail="Failed to get request")
+#     try:
+#         raise NotImplementedError
+#     except Exception as e:
+#         print(f"Not Implemented {e}")
+#         raise HTTPException(status_code=500, detail="Failed to get request")
     
