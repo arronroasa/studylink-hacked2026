@@ -1,9 +1,7 @@
 // client/src/app/pages/SearchGroups.tsx
-import { Card } from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
 import { useState } from "react";
 import { Search, Filter } from "lucide-react";
+import { Link } from "react-router";
 import { useStudyGroups } from "../context/StudyGroupContext";
 import { StudyGroupCard } from "../components/StudyGroupCard";
 
@@ -12,7 +10,7 @@ export function SearchGroups() {
   const { groups, isJoined } = useStudyGroups();
 
   const filteredGroups = groups
-    .filter(group => !isJoined(group.id))
+    .filter((group) => !isJoined(group.id))
     .filter(
       (group) =>
         group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -21,59 +19,140 @@ export function SearchGroups() {
     );
 
   return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="max-w-7xl mx-auto p-8">
+    <div style={{ flex: 1, overflowY: "auto", backgroundColor: "#f9fafb" }}>
+      <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "40px 32px" }}>
+
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="mb-2">Search Study Groups</h1>
-          <p className="text-muted-foreground">
+        <div style={{ marginBottom: "32px" }}>
+          <h1 style={{ fontSize: "26px", fontWeight: "700", color: "#111827", marginBottom: "6px" }}>
+            Search Study Groups
+          </h1>
+          <p style={{ fontSize: "14px", color: "#6b7280" }}>
             Find the perfect study group that matches your learning goals.
           </p>
         </div>
 
         {/* Search Bar */}
-        <Card className="p-4 mb-6">
-          <div className="flex gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by group name, subject, or keywords..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Button variant="outline" className="gap-2">
-              <Filter className="h-4 w-4" />
-              Filters
-            </Button>
+        <div
+          style={{
+            backgroundColor: "#ffffff",
+            border: "1px solid #e5e7eb",
+            borderRadius: "12px",
+            padding: "16px 20px",
+            marginBottom: "24px",
+            display: "flex",
+            gap: "12px",
+            alignItems: "center",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+          }}
+        >
+          <div style={{ flex: 1, position: "relative" }}>
+            <Search
+              style={{
+                position: "absolute",
+                left: "12px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                width: "16px",
+                height: "16px",
+                color: "#9ca3af",
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Search by group name, subject, or keywords..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: "100%",
+                paddingLeft: "40px",
+                paddingRight: "16px",
+                paddingTop: "9px",
+                paddingBottom: "9px",
+                fontSize: "14px",
+                border: "1.5px solid #e5e7eb",
+                borderRadius: "8px",
+                outline: "none",
+                color: "#111827",
+                backgroundColor: "#f9fafb",
+                boxSizing: "border-box",
+              }}
+            />
           </div>
-        </Card>
+          <button
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "9px 16px",
+              borderRadius: "8px",
+              border: "1.5px solid #d1d5db",
+              backgroundColor: "transparent",
+              fontSize: "13px",
+              fontWeight: "600",
+              color: "#374151",
+              cursor: "pointer",
+            }}
+          >
+            <Filter style={{ width: "14px", height: "14px" }} />
+            Filters
+          </button>
+        </div>
 
         {/* Results Count */}
-        <div className="mb-4">
-          <p className="text-sm text-muted-foreground">
-            Found {filteredGroups.length} study group{filteredGroups.length !== 1 ? "s" : ""}
-          </p>
-        </div>
+        <p style={{ fontSize: "13px", color: "#6b7280", marginBottom: "20px" }}>
+          Found {filteredGroups.length} study group{filteredGroups.length !== 1 ? "s" : ""}
+        </p>
 
         {/* Study Groups Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-[#FFFAE0] p-4 rounded-lg">
-          {filteredGroups.map((group) => (
-            <StudyGroupCard key={group.id} group={group} />
-          ))}
-        </div>
-
-        {/* Empty State */}
-        {filteredGroups.length === 0 && (
-          <Card className="p-12 text-center">
-            <Search className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="mb-2">No study groups found</h3>
-            <p className="text-muted-foreground mb-4">
-              Try adjusting your search or create a new study group.
+        {filteredGroups.length > 0 ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "20px" }}>
+            {filteredGroups.map((group) => (
+              <StudyGroupCard key={group.id} group={group} />
+            ))}
+          </div>
+        ) : (
+          <div
+            style={{
+              backgroundColor: "#ffffff",
+              border: "1px solid #e5e7eb",
+              borderRadius: "12px",
+              padding: "64px 24px",
+              textAlign: "center",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+            }}
+          >
+            <Search
+              style={{
+                width: "40px",
+                height: "40px",
+                color: "#d1d5db",
+                margin: "0 auto 16px",
+              }}
+            />
+            <p style={{ fontSize: "16px", fontWeight: "600", color: "#111827", marginBottom: "8px" }}>
+              No available study groups found
             </p>
-            <Button style={{ backgroundColor: "#ca8a04" }}>Create New Group</Button>
-          </Card>
+            <p style={{ fontSize: "14px", color: "#6b7280", marginBottom: "20px" }}>
+              You may have joined all groups, or try adjusting your search.
+            </p>
+            <Link to="/create">
+              <button
+                style={{
+                  padding: "10px 24px",
+                  borderRadius: "8px",
+                  border: "none",
+                  backgroundColor: "#ca8a04",
+                  color: "#ffffff",
+                  fontWeight: "600",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                }}
+              >
+                Create New Group
+              </button>
+            </Link>
+          </div>
         )}
       </div>
     </div>

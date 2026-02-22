@@ -1,14 +1,34 @@
 // client/src/app/pages/CreateGroup.tsx
-import { Card } from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import { Textarea } from "../components/ui/textarea";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Calendar, Users, BookOpen, Clock, MapPin } from "lucide-react";
 import { useStudyGroups } from "../context/StudyGroupContext";
 import { StudyGroupCard } from "../components/StudyGroupCard";
+
+const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+const inputStyle = {
+  width: "100%",
+  padding: "10px 14px",
+  fontSize: "14px",
+  border: "1.5px solid #e5e7eb",
+  borderRadius: "8px",
+  outline: "none",
+  color: "#111827",
+  backgroundColor: "#ffffff",
+  boxSizing: "border-box" as const,
+  fontFamily: "inherit",
+};
+
+const labelStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: "6px",
+  fontSize: "13px",
+  fontWeight: "600" as const,
+  color: "#374151",
+  marginBottom: "6px",
+};
 
 export function CreateGroup() {
   const navigate = useNavigate();
@@ -25,7 +45,7 @@ export function CreateGroup() {
   });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -47,26 +67,43 @@ export function CreateGroup() {
     navigate("/");
   };
 
+  const hasPreview = formData.groupName.trim().length > 0;
+
   return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="max-w-3xl mx-auto p-8">
+    <div style={{ flex: 1, overflowY: "auto", backgroundColor: "#f9fafb" }}>
+      <div style={{ maxWidth: "760px", margin: "0 auto", padding: "40px 32px" }}>
+
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="mb-2">Create a Study Group</h1>
-          <p className="text-muted-foreground">
+        <div style={{ marginBottom: "32px" }}>
+          <h1 style={{ fontSize: "26px", fontWeight: "700", color: "#111827", marginBottom: "6px" }}>
+            Create a Study Group
+          </h1>
+          <p style={{ fontSize: "14px", color: "#6b7280" }}>
             Fill out the form below to create a new study group and start connecting with students.
           </p>
         </div>
 
-        {/* Form */}
-        <Card className="p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="groupName" className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4" style={{ color: "#16a34a" }} />
+        {/* Form Card */}
+        <div
+          style={{
+            backgroundColor: "#ffffff",
+            border: "1px solid #e5e7eb",
+            borderRadius: "12px",
+            padding: "32px",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+            marginBottom: "24px",
+          }}
+        >
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+
+            {/* Group Name */}
+            <div>
+              <label style={labelStyle}>
+                <BookOpen style={{ width: "15px", height: "15px", color: "#16a34a" }} />
                 Group Name
-              </Label>
-              <Input
+              </label>
+              <input
+                style={inputStyle}
                 id="groupName"
                 name="groupName"
                 placeholder="e.g., Advanced Calculus Study Group"
@@ -76,9 +113,11 @@ export function CreateGroup() {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="subject">Subject</Label>
-              <Input
+            {/* Subject */}
+            <div>
+              <label style={labelStyle}>Subject</label>
+              <input
+                style={inputStyle}
                 id="subject"
                 name="subject"
                 placeholder="e.g., Mathematics, Chemistry, Computer Science"
@@ -88,12 +127,14 @@ export function CreateGroup() {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
+            {/* Description */}
+            <div>
+              <label style={labelStyle}>Description</label>
+              <textarea
+                style={{ ...inputStyle, resize: "vertical", minHeight: "100px" }}
                 id="description"
                 name="description"
-                placeholder="Describe your study group..."
+                placeholder="Describe what your study group is about, topics covered, and expectations..."
                 value={formData.description}
                 onChange={handleChange}
                 rows={4}
@@ -101,12 +142,14 @@ export function CreateGroup() {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="maxMembers" className="flex items-center gap-2">
-                <Users className="h-4 w-4" style={{ color: "#ca8a04" }} />
+            {/* Max Members */}
+            <div>
+              <label style={labelStyle}>
+                <Users style={{ width: "15px", height: "15px", color: "#ca8a04" }} />
                 Maximum Members
-              </Label>
-              <Input
+              </label>
+              <input
+                style={inputStyle}
                 id="maxMembers"
                 name="maxMembers"
                 type="number"
@@ -119,28 +162,33 @@ export function CreateGroup() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="meetingDay" className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" style={{ color: "#16a34a" }} />
+            {/* Meeting Schedule */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div>
+                <label style={labelStyle}>
+                  <Calendar style={{ width: "15px", height: "15px", color: "#16a34a" }} />
                   Meeting Day
-                </Label>
-                <Input
-                  id="meetingDay"
+                </label>
+                <select
+                  style={{ ...inputStyle, appearance: "auto" }}
                   name="meetingDay"
-                  placeholder="e.g., Monday"
                   value={formData.meetingDay}
                   onChange={handleChange}
                   required
-                />
+                >
+                  <option value="">Select a day</option>
+                  {DAYS.map((day) => (
+                    <option key={day} value={day}>{day}</option>
+                  ))}
+                </select>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="meetingTime" className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" style={{ color: "#ca8a04" }} />
+              <div>
+                <label style={labelStyle}>
+                  <Clock style={{ width: "15px", height: "15px", color: "#ca8a04" }} />
                   Meeting Time
-                </Label>
-                <Input
-                  id="meetingTime"
+                </label>
+                <input
+                  style={inputStyle}
                   name="meetingTime"
                   type="time"
                   value={formData.meetingTime}
@@ -150,14 +198,15 @@ export function CreateGroup() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="building" className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" style={{ color: "#16a34a" }} />
+            {/* Location */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div>
+                <label style={labelStyle}>
+                  <MapPin style={{ width: "15px", height: "15px", color: "#16a34a" }} />
                   Building
-                </Label>
-                <Input
-                  id="building"
+                </label>
+                <input
+                  style={inputStyle}
                   name="building"
                   placeholder="e.g., Science Building"
                   value={formData.building}
@@ -165,39 +214,70 @@ export function CreateGroup() {
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="floor" className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" style={{ color: "#ca8a04" }} />
+              <div>
+                <label style={labelStyle}>
+                  <MapPin style={{ width: "15px", height: "15px", color: "#ca8a04" }} />
                   Floor
-                </Label>
-                <Input
-                  id="floor"
+                </label>
+                <input
+                  style={inputStyle}
                   name="floor"
                   type="number"
                   placeholder="e.g., 2"
                   value={formData.floor}
                   onChange={handleChange}
+                  min={1}
+                  max={20}
                   required
                 />
               </div>
             </div>
 
-            {/* Submit Buttons */}
-            <div className="flex gap-4 pt-4">
-              <Button type="submit" className="flex-1" style={{ backgroundColor: "#16a34a" }}>
+            {/* Buttons */}
+            <div style={{ display: "flex", gap: "12px", paddingTop: "8px" }}>
+              <button
+                type="submit"
+                style={{
+                  flex: 1,
+                  padding: "11px 0",
+                  borderRadius: "8px",
+                  border: "none",
+                  backgroundColor: "#16a34a",
+                  color: "#ffffff",
+                  fontWeight: "600",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                }}
+              >
                 Create Study Group
-              </Button>
-              <Button type="button" variant="outline" className="flex-1" onClick={() => navigate("/")}>
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/")}
+                style={{
+                  flex: 1,
+                  padding: "11px 0",
+                  borderRadius: "8px",
+                  border: "1.5px solid #d1d5db",
+                  backgroundColor: "transparent",
+                  color: "#374151",
+                  fontWeight: "600",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                }}
+              >
                 Cancel
-              </Button>
+              </button>
             </div>
           </form>
-        </Card>
+        </div>
 
         {/* Live Preview */}
-        {formData.groupName && (
-          <div className="mt-6">
-            <h3 className="mb-2">Preview</h3>
+        {hasPreview && (
+          <div style={{ marginBottom: "24px" }}>
+            <h3 style={{ fontSize: "15px", fontWeight: "700", color: "#111827", marginBottom: "12px" }}>
+              Preview
+            </h3>
             <StudyGroupCard
               group={{
                 id: "preview",
@@ -215,16 +295,30 @@ export function CreateGroup() {
           </div>
         )}
 
-        {/* Tips */}
-        <Card className="mt-6 p-6" style={{ backgroundColor: "#fef3c7" }}>
-          <h3 className="mb-2">Tips for Creating a Successful Study Group</h3>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>• Choose a clear and descriptive name</li>
-            <li>• Set realistic meeting schedules</li>
-            <li>• Clearly define topics and scope</li>
-            <li>• Consider the ideal group size</li>
+        {/* Tips Card */}
+        <div
+          style={{
+            backgroundColor: "#fefce8",
+            border: "1px solid #fde68a",
+            borderRadius: "12px",
+            padding: "24px",
+          }}
+        >
+          <h3 style={{ fontSize: "15px", fontWeight: "700", color: "#92400e", marginBottom: "12px" }}>
+            Tips for a Successful Study Group
+          </h3>
+          <ul style={{ listStyle: "disc", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "6px" }}>
+            {[
+              "Choose a clear and descriptive name for your group.",
+              "Set realistic meeting schedules that work for most students.",
+              "Clearly define the topics and scope of your study group.",
+              "Consider the ideal group size for effective collaboration.",
+            ].map((tip) => (
+              <li key={tip} style={{ fontSize: "13px", color: "#a16207" }}>{tip}</li>
+            ))}
           </ul>
-        </Card>
+        </div>
+
       </div>
     </div>
   );

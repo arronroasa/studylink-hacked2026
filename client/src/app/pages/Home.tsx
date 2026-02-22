@@ -1,5 +1,4 @@
 // client/src/app/pages/Home.tsx
-import { Card } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Users, Calendar, BookOpen } from "lucide-react";
 import { Link } from "react-router";
@@ -9,80 +8,186 @@ import { StudyGroupCard } from "../components/StudyGroupCard";
 export function Home() {
   const { groups, isJoined } = useStudyGroups();
 
-  // Filter groups the user has joined
-  const myGroups = groups.filter(group => isJoined(group.id));
-  const recentGroups = myGroups.slice(0, 3); // limit to 3 most recent
+  const myGroups = groups.filter((group) => isJoined(group.id));
+  const recentGroups = myGroups.slice(0, 3);
 
   const stats = [
-    { label: "Active Groups", value: "24", icon: Users, color: "#16a34a" },
-    { label: "Upcoming Sessions", value: "8", icon: Calendar, color: "#ca8a04" },
-    { label: "Total Members", value: "156", icon: BookOpen, color: "#16a34a" },
+    { label: "Active Groups", value: "--", icon: Users, iconColor: "#16a34a", bgColor: "#f0fdf4" },
+    { label: "Upcoming Sessions", value: "--", icon: Calendar, iconColor: "#ca8a04", bgColor: "#fefce8" },
+    { label: "Total Members", value: "--", icon: BookOpen, iconColor: "#16a34a", bgColor: "#f0fdf4" },
   ];
 
   return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="max-w-7xl mx-auto p-8">
+    <div style={{ flex: 1, overflowY: "auto", backgroundColor: "#f9fafb" }}>
+      <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "40px 32px" }}>
+
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="mb-2">Welcome to StudyLink</h1>
-          <p className="text-muted-foreground">
+        <div style={{ marginBottom: "32px" }}>
+          <h1 style={{ fontSize: "26px", fontWeight: "700", color: "#111827", marginBottom: "6px" }}>
+            Welcome to StudyLink
+          </h1>
+          <p style={{ fontSize: "14px", color: "#6b7280" }}>
             Connect with students and join study groups to enhance your learning experience.
           </p>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px", marginBottom: "40px" }}>
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
-              <Card key={stat.label} className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
-                    <p className="text-3xl font-bold" style={{ color: stat.color }}>
-                      {stat.value}
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-full" style={{ backgroundColor: `${stat.color}15` }}>
-                    <Icon className="h-6 w-6" style={{ color: stat.color }} />
-                  </div>
+              <div
+                key={stat.label}
+                style={{
+                  backgroundColor: "#ffffff",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "12px",
+                  padding: "24px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+                }}
+              >
+                <div>
+                  <p style={{ fontSize: "13px", color: "#6b7280", marginBottom: "6px" }}>{stat.label}</p>
+                  <p style={{ fontSize: "32px", fontWeight: "800", color: stat.iconColor }}>{stat.value}</p>
                 </div>
-              </Card>
+                <div
+                  style={{
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "50%",
+                    backgroundColor: stat.bgColor,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Icon style={{ width: "22px", height: "22px", color: stat.iconColor }} />
+                </div>
+              </div>
             );
           })}
         </div>
 
-        {/* Recent Study Groups */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2>Recent Study Groups</h2>
+        {/* My Study Groups */}
+        <div style={{ marginBottom: "40px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+            <h2 style={{ fontSize: "18px", fontWeight: "700", color: "#111827" }}>My Study Groups</h2>
             <Link to="/search">
-              <Button variant="outline">View All</Button>
+              <button
+                style={{
+                  padding: "7px 16px",
+                  borderRadius: "8px",
+                  border: "1.5px solid #d1d5db",
+                  backgroundColor: "transparent",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                  color: "#374151",
+                  cursor: "pointer",
+                }}
+              >
+                Find Groups
+              </button>
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-[#FFFAE0] p-4 rounded-lg">
-            {recentGroups.map((group) => (
-              <StudyGroupCard key={group.id} group={group} />
-            ))}
+          {recentGroups.length > 0 ? (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
+              {recentGroups.map((group) => (
+                <StudyGroupCard key={group.id} group={group} />
+              ))}
+            </div>
+          ) : (
+            <div
+              style={{
+                backgroundColor: "#ffffff",
+                border: "1px solid #e5e7eb",
+                borderRadius: "12px",
+                padding: "48px 24px",
+                textAlign: "center",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+              }}
+            >
+              <p style={{ fontSize: "16px", fontWeight: "600", color: "#111827", marginBottom: "8px" }}>
+                You haven't joined any study groups yet
+              </p>
+              <p style={{ fontSize: "14px", color: "#6b7280", marginBottom: "20px" }}>
+                Explore available groups and start connecting with other students.
+              </p>
+              <Link to="/search">
+                <button
+                  style={{
+                    padding: "10px 24px",
+                    borderRadius: "8px",
+                    border: "none",
+                    backgroundColor: "#ca8a04",
+                    color: "#ffffff",
+                    fontWeight: "600",
+                    fontSize: "14px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Find Groups
+                </button>
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Quick Actions Banner */}
+        <div
+          style={{
+            backgroundColor: "#fefce8",
+            border: "1px solid #fde68a",
+            borderRadius: "12px",
+            padding: "36px 32px",
+            textAlign: "center",
+          }}
+        >
+          <h2 style={{ fontSize: "20px", fontWeight: "700", color: "#92400e", marginBottom: "8px" }}>
+            Ready to Start Learning?
+          </h2>
+          <p style={{ fontSize: "14px", color: "#a16207", marginBottom: "24px" }}>
+            Create a new study group or search for existing ones to join.
+          </p>
+          <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+            <Link to="/create">
+              <button
+                style={{
+                  padding: "10px 24px",
+                  borderRadius: "8px",
+                  border: "none",
+                  backgroundColor: "#ca8a04",
+                  color: "#ffffff",
+                  fontWeight: "600",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                }}
+              >
+                Create Study Group
+              </button>
+            </Link>
+            <Link to="/search">
+              <button
+                style={{
+                  padding: "10px 24px",
+                  borderRadius: "8px",
+                  border: "1.5px solid #d97706",
+                  backgroundColor: "transparent",
+                  color: "#92400e",
+                  fontWeight: "600",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                }}
+              >
+                Search Groups
+              </button>
+            </Link>
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <Card className="p-8 text-center" style={{ backgroundColor: "#fef3c7" }}>
-          <h2 className="mb-2">Ready to Start Learning?</h2>
-          <p className="text-muted-foreground mb-6">
-            Create a new study group or search for existing ones to join.
-          </p>
-          <div className="flex gap-4 justify-center">
-            <Link to="/create">
-              <Button style={{ backgroundColor: "#ca8a04" }}>Create Study Group</Button>
-            </Link>
-            <Link to="/search">
-              <Button variant="outline">Search Groups</Button>
-            </Link>
-          </div>
-        </Card>
       </div>
     </div>
   );
