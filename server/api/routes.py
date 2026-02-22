@@ -219,7 +219,7 @@ async def get_my_groups(item: GetItems = Query(...)):
                 params = ()
             else:
                 query="SELECT * FROM events WHERE course_code LIKE ?"
-                params = f"%{item.course_code}%,"
+                params = (f"%{item.course_code}%",)
         
         else:
             # THIS IS A GET GROUPS JOINED REQUEST
@@ -236,6 +236,11 @@ async def get_my_groups(item: GetItems = Query(...)):
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail="Failed to get request")
 
+@router.get("/check_membership/", status_code=status.HTTP_200_OK)
+async def check_membership(group_id: int, user_id: int):
+    query = "SELECT 1 FROM attendees WHERE eid = ? AND uid = ?"
+    result = execute_query(query, (group_id, user_id), fetch=True)
+    return {"is_member": bool(result)}
 
 # DEPRECATED 
 # @router.get("/group_detail/",

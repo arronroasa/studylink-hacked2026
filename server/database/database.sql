@@ -76,4 +76,7 @@ INSERT INTO users (username, email, password_hash)
 VALUES ('testuser', 'test@example.com', 'hashed_password'),
 ('testloser', 'isleep@example.com', 'hashed_password');
 
-SELECT uid FROM users;
+INSERT INTO users (username, email, password_hash) 
+VALUES ('testuser2', 'test2@example.com', 'hashed_password2');
+
+SELECT * FROM users
