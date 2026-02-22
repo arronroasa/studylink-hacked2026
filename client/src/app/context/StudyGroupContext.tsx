@@ -46,8 +46,7 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
     try {
       const params = new URLSearchParams({
         user_id: userId.toString(),
-        is_search: "true",
-        course_code: "SEARCH_ALL"
+        is_search: "true"
       });
 
       const response = await fetch(`${API_BASE}/items/groups/?${params.toString()}`, {
