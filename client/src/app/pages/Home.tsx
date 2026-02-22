@@ -1,6 +1,4 @@
 // client/src/app/pages/Home.tsx
-import { Button } from "../components/ui/button";
-import { Users, Calendar, BookOpen } from "lucide-react";
 import { Link } from "react-router";
 import { useStudyGroups } from "../context/StudyGroupContext";
 import { StudyGroupCard } from "../components/StudyGroupCard";
@@ -12,9 +10,9 @@ export function Home() {
   const recentGroups = myGroups.slice(0, 3);
 
   const stats = [
-    { label: "Active Groups", value: "--", icon: Users, iconColor: "#16a34a", bgColor: "#f0fdf4" },
-    { label: "Upcoming Sessions", value: "--", icon: Calendar, iconColor: "#ca8a04", bgColor: "#fefce8" },
-    { label: "Total Members", value: "--", icon: BookOpen, iconColor: "#16a34a", bgColor: "#f0fdf4" },
+    { label: "Groups Joined", value: myGroups.length.toString(), color: "#16a34a" },
+    { label: "Total Groups", value: groups.length.toString(), color: "#ca8a04" },
+    { label: "Total Members", value: groups.reduce((sum, g) => sum + g.members, 0).toString(), color: "#16a34a" },
   ];
 
   return (
@@ -33,42 +31,21 @@ export function Home() {
 
         {/* Stats Grid */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px", marginBottom: "40px" }}>
-          {stats.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <div
-                key={stat.label}
-                style={{
-                  backgroundColor: "#ffffff",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "12px",
-                  padding: "24px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-                }}
-              >
-                <div>
-                  <p style={{ fontSize: "13px", color: "#6b7280", marginBottom: "6px" }}>{stat.label}</p>
-                  <p style={{ fontSize: "32px", fontWeight: "800", color: stat.iconColor }}>{stat.value}</p>
-                </div>
-                <div
-                  style={{
-                    width: "48px",
-                    height: "48px",
-                    borderRadius: "50%",
-                    backgroundColor: stat.bgColor,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Icon style={{ width: "22px", height: "22px", color: stat.iconColor }} />
-                </div>
-              </div>
-            );
-          })}
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              style={{
+                backgroundColor: "#ffffff",
+                border: "1px solid #e5e7eb",
+                borderRadius: "12px",
+                padding: "28px 24px",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+              }}
+            >
+              <p style={{ fontSize: "16px", fontWeight: "600", color: "#374151", marginBottom: "10px" }}>{stat.label}</p>
+              <p style={{ fontSize: "52px", fontWeight: "800", color: stat.color, lineHeight: "1" }}>{stat.value}</p>
+            </div>
+          ))}
         </div>
 
         {/* My Study Groups */}
