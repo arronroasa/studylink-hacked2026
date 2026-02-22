@@ -79,7 +79,7 @@ export function StudyGroupProvider({ children }: { children: ReactNode }) {
           building: g.building,
           floor: g.room,
           nextMeeting: g.next_meeting,
-          isOwner: g.organizer_id === userId
+          isOwner: g.owner_id === userId
         };
       });
 
